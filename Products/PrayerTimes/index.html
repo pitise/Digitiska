@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self' blob:; connect-src 'self' https://nominatim.openstreetmap.org; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="origin">
+<title>Salah Times - Prayer Times</title>
+<meta name="description" content="Current prayer, time left, and today's prayer times using the JAKIM (Malaysia) method.">
+<meta name="theme-color" content="#0a2118">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Salah Times">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="top-text">
+      <div class="loc">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="loc-name">Locating…</span>
+      </div>
+      <h1 id="date-main"></h1>
+      <p id="date-hijri"></p>
+    </div>
+    <div class="actions">
+      <button id="btn-settings" class="icon-btn" type="button" aria-label="Azan settings" aria-haspopup="dialog">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path class="slash" d="M3 3l18 18"/></svg>
+      </button>
+      <button id="btn-refresh" class="icon-btn" type="button" aria-label="Update my location">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="notice" class="notice" role="status" hidden>
+    <span id="notice-text"></span>
+    <button id="notice-action" type="button" hidden></button>
+  </div>
+
+  <section class="hero" aria-label="Current prayer">
+    <div class="hero-head">
+      <h2 id="hero-name">&nbsp;</h2>
+      <span id="hero-ar" lang="ar" dir="rtl"></span>
+    </div>
+    <hr>
+    <div class="hero-foot">
+      <div>
+        <div id="hero-label" class="lbl">Ends in</div>
+        <div id="hero-count" class="count">--:--:--</div>
+      </div>
+      <span id="hero-start" class="start"></span>
+    </div>
+    <p id="hero-next" class="next"></p>
+  </section>
+
+  <ul id="list" class="list" aria-label="Prayer times today"></ul>
+
+  <p class="method"><span>Calculation method</span><strong>Malaysia (JAKIM)</strong></p>
+  <footer>© 2026 Digitiska</footer>
+</main>
+
+<dialog id="settings" aria-labelledby="settings-title">
+  <h2 id="settings-title">Azan</h2>
+
+  <label class="switch-row" for="azan-toggle">
+    <span>Play azan at prayer time</span>
+    <input id="azan-toggle" type="checkbox" role="switch">
+    <span class="switch" aria-hidden="true"></span>
+  </label>
+  <p id="azan-status" class="small"></p>
+  <button id="azan-test" class="btn" type="button">Test azan</button>
+
+  <p class="small warn">Azan and alerts only work while this app is open on your device. A web app cannot wake a closed or locked phone.</p>
+
+  <div id="install-block">
+    <h3>Install</h3>
+    <button id="install-btn" class="btn" type="button" hidden>Install app</button>
+    <p id="install-hint" class="small">iPhone / iPad: tap Share, then Add to Home Screen. Android: browser menu, then Install app (or Add to Home screen).</p>
+  </div>
+
+  <h3>Privacy</h3>
+  <p class="small">No account, no ads, no analytics. Your position stays on this device. To show a place name, a position rounded to about 1 km is sent to OpenStreetMap Nominatim.</p>
+  <p class="small">Times are calculated on this device and can differ by a minute or two from the official e-solat timetable.</p>
+
+  <button id="settings-close" class="btn primary" type="button">Close</button>
+</dialog>
+
+<audio id="azan" preload="none"></audio>
+<script src="prayer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
