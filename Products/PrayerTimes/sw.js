@@ -1,7 +1,7 @@
 /* Service worker: caches the app shell so it opens instantly and works offline. */
-var CACHE = 'salah-times-v1';
+var CACHE = 'salah-times-v2';
 var CORE = [
-  './', 'index.html', 'style.css', 'prayer.js', 'app.js',
+  './', 'index.html', 'style.css', 'prayer.js', 'place.js', 'app.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'
 ];
 

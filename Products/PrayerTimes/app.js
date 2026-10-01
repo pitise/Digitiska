@@ -20,6 +20,7 @@
   var KEY = { loc: 'pt.loc', azan: 'pt.azan', fired: 'pt.fired' };
   var FIRE_WINDOW_MS = 90 * 1000;
   var AZAN_URL = 'audio/azan.mp3';
+  var EMBED = window.SALAH_EMBED || null;
 
   function $(id) { return document.getElementById(id); }
   var el = {
@@ -31,7 +32,7 @@
     dialog: $('settings'), toggle: $('azan-toggle'), azanStatus: $('azan-status'),
     azanTest: $('azan-test'), close: $('settings-close'),
     installBlock: $('install-block'), installBtn: $('install-btn'), installHint: $('install-hint'),
-    audio: $('azan')
+    audio: $('azan'), locSelect: $('loc-select')
   };
 
   /* ---------- storage (every access guarded: it can throw in private mode) ---------- */
@@ -171,13 +172,8 @@
     }
 
     PRAYERS.forEach(function (p) {
-      var today = null;
-      for (var k = 0; k < tl.length; k++) if (tl[k].off === 0 && tl[k].key === p.key) today = tl[k];
-      var cls = '', tag = '';
-      if (p.key === cur.key) { cls = 'is-now'; tag = 'Now'; }
-      else if (today.time <= now) cls = 'is-past';
-      else if (next && next.off === 0 && next.key === p.key) { cls = 'is-next'; tag = 'Next'; }
-      setRow(p.key, cls, tag);
+      var current = p.key === cur.key;
+      setRow(p.key, current ? 'is-now' : '', current ? 'Now' : '');
     });
 
     if (azanOn) {
@@ -211,13 +207,6 @@
     return 2 * R * Math.asin(Math.sqrt(x));
   }
 
-  function placeName(data) {
-    var a = data && data.address;
-    if (!a) return '';
-    var place = a.suburb || a.city_district || a.village || a.town || a.city || a.county || a.state_district || a.state;
-    return [place, a.country].filter(Boolean).join(', ');
-  }
-
   var lookupSeq = 0;
   function lookup(lat, lng) {
     var seq = ++lookupSeq;
@@ -229,8 +218,8 @@
     fetch(url, { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', referrerPolicy: 'origin' })
       .then(function (r) { if (!r.ok) throw new Error('lookup ' + r.status); return r.json(); })
       .then(function (data) {
-        var name = placeName(data);
-        if (seq !== lookupSeq || !loc || !name) return;
+        var name = PlaceInfo.placeName(data);
+        if (seq !== lookupSeq || !loc || loc.manual || !name) return;
         loc.name = name;
         loc.named = true;
         save(KEY.loc, loc);
@@ -241,9 +230,10 @@
   }
 
   function detect(force) {
+    if (!force && loc && loc.manual) return;
     function done() { el.btnRefresh.classList.remove('spin'); el.btnRefresh.disabled = false; }
     if (!navigator.geolocation) {
-      showNotice(loc ? 'This browser cannot update location. Showing the last known place.' : 'This browser has no location support. Showing Kuala Lumpur times.');
+      showNotice(loc ? 'This browser cannot update location. Showing the last known place.' : 'This browser has no location support. Showing Kuala Lumpur times. Choose your place in Settings (bell icon).');
       return;
     }
     el.btnRefresh.classList.add('spin');
@@ -251,13 +241,15 @@
     navigator.geolocation.getCurrentPosition(function (pos) {
       done();
       var next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      var moved = !loc || distKm(loc, next) > 1;
-      var keepName = !moved && loc.named;
+      var moved = !loc || loc.manual || distKm(loc, next) > 1;
+      var keepName = !moved && loc.named && !loc.manual;
       loc = {
         lat: next.lat, lng: next.lng,
         name: keepName ? loc.name : next.lat.toFixed(2) + '°, ' + next.lng.toFixed(2) + '°',
-        named: keepName
+        named: keepName,
+        manual: false
       };
+      syncSelect();
       save(KEY.loc, loc);
       lastFixAt = Date.now();
       hideNotice();
@@ -268,10 +260,39 @@
       done();
       var denied = err && err.code === 1;
       if (loc) showNotice('Could not update location. Showing the last known place.', 'Retry', function () { detect(true); });
-      else if (denied) showNotice('Location is off, so Kuala Lumpur times are shown. Allow location for this site in your browser settings, then tap the refresh button.');
-      else showNotice('Could not get your location. Showing Kuala Lumpur times.', 'Retry', function () { detect(true); });
+      else if (denied) showNotice('Location is off, so Kuala Lumpur times are shown. Allow location for this site in your browser settings, or choose your place in Settings (bell icon).');
+      else showNotice('Could not get your location. Showing Kuala Lumpur times. You can choose your place in Settings (bell icon).', 'Retry', function () { detect(true); });
+      syncSelect();
       setLocLabel();
     }, { enableHighAccuracy: false, timeout: 15000, maximumAge: force ? 0 : 600000 });
+  }
+
+  /* ---------- manual place (when GPS is unavailable) ---------- */
+  function buildPlaceSelect() {
+    var o = make('option', '', 'Automatic (GPS)');
+    o.value = 'gps';
+    el.locSelect.appendChild(o);
+    PlaceInfo.PLACES.forEach(function (p) {
+      var opt = make('option', '', p.name);
+      opt.value = p.id;
+      el.locSelect.appendChild(opt);
+    });
+  }
+  function syncSelect() {
+    el.locSelect.value = loc && loc.manual ? loc.placeId : 'gps';
+  }
+  function onPlaceChosen() {
+    var v = el.locSelect.value;
+    if (v === 'gps') { detect(true); return; }
+    var place = null;
+    PlaceInfo.PLACES.forEach(function (p) { if (p.id === v) place = p; });
+    if (!place) return;
+    lookupSeq++;                                   /* cancel any pending name lookup */
+    loc = { lat: place.lat, lng: place.lng, name: place.name + ', Malaysia', named: true, manual: true, placeId: place.id };
+    save(KEY.loc, loc);
+    hideNotice();
+    setLocLabel();
+    tick();
   }
 
   /* ---------- azan ---------- */
@@ -305,10 +326,19 @@
     }
   }
 
+  /* Standalone build: the azan sound is embedded in the page as base64 (window.SALAH_EMBED). */
+  function embeddedAzan() {
+    var bin = atob(EMBED.azan), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: EMBED.azanType || 'audio/mpeg' });
+  }
+
   function loadAzan() {
     if (azanLoaded) return azanLoaded;
-    azanLoaded = fetch(AZAN_URL, { credentials: 'omit' })
-      .then(function (r) { if (!r.ok) throw new Error('missing'); return r.blob(); })
+    var source = EMBED
+      ? (EMBED.azan ? Promise.resolve(embeddedAzan()) : Promise.reject(new Error('missing')))
+      : fetch(AZAN_URL, { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error('missing'); return r.blob(); });
+    azanLoaded = source
       .then(function (b) { el.audio.src = URL.createObjectURL(b); })
       .catch(function (e) { azanLoaded = null; throw e; });
     return azanLoaded;
@@ -325,7 +355,7 @@
       if (e && e.name === 'NotAllowedError') {
         showNotice('The browser blocked the azan. Tap to allow sound.', 'Allow', function () { hideNotice(); playAzan(); });
       } else {
-        showNotice('Azan audio file not found. Add it as ' + AZAN_URL + ' (see README).');
+        showNotice(EMBED ? 'No azan sound is included in this copy of the app.' : 'Azan audio file not found. Add it as ' + AZAN_URL + ' (see README).');
       }
       updateTestButton();
     });
@@ -338,15 +368,15 @@
   }
 
   function notify(item) {
-    if (!('Notification' in window) || Notification.permission !== 'granted' || !navigator.serviceWorker) return;
-    navigator.serviceWorker.ready.then(function (reg) {
-      return reg.showNotification('Waktu ' + P[item.key].ms, {
-        body: P[item.key].ms + ' · ' + hm(item.time) + ' · ' + here().name,
-        icon: 'icons/icon-192.png',
-        tag: 'prayer-time',
-        silent: true
-      });
-    }).catch(function () { /* ignore */ });
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    var title = 'Waktu ' + P[item.key].ms;
+    var opts = { body: P[item.key].ms + ' · ' + hm(item.time) + ' · ' + here().name, icon: 'icons/icon-192.png', tag: 'prayer-time', silent: true };
+    if (!EMBED && navigator.serviceWorker) {
+      navigator.serviceWorker.ready.then(function (reg) { return reg.showNotification(title, opts); }).catch(function () { /* ignore */ });
+    } else {
+      /* Single-file build: no service worker exists, so use the page notification (desktop browsers; many phones refuse it). */
+      try { new Notification(title, opts); } catch (e) { /* ignore */ }
+    }
   }
 
   function fire(item) {
@@ -375,10 +405,11 @@
   }
 
   function wireUi() {
-    el.btnSettings.addEventListener('click', function () { renderAzanState(); el.dialog.showModal(); });
+    el.btnSettings.addEventListener('click', function () { renderAzanState(); syncSelect(); el.dialog.showModal(); });
     el.close.addEventListener('click', function () { el.dialog.close(); });
     el.dialog.addEventListener('click', function (e) { if (e.target === el.dialog) el.dialog.close(); });
     el.btnRefresh.addEventListener('click', function () { detect(true); });
+    el.locSelect.addEventListener('change', onPlaceChosen);
 
     el.toggle.addEventListener('change', function () {
       azanOn = el.toggle.checked;
@@ -434,14 +465,16 @@
 
   /* ---------- start ---------- */
   buildList();
+  buildPlaceSelect();
   wireUi();
   renderAzanState();
+  syncSelect();
   setLocLabel();
   tick();
   setInterval(tick, 1000);
   detect(false);
 
-  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  if (!EMBED && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
     navigator.serviceWorker.register('sw.js').catch(function () { /* app works without it */ });
   }
 })();

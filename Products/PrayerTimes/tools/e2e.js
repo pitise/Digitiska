@@ -1,7 +1,9 @@
 // End-to-end test in headless Chromium: mocked clock, GPS, timezone and place-name service.
-//   NODE_PATH=$(npm root -g) node tools/e2e.js [screenshot-dir]
+//   NODE_PATH=$(npm root -g) node tools/e2e.js [screenshot-dir]                 multi-file app over http
+//   STANDALONE=1 NODE_PATH=$(npm root -g) node tools/e2e.js [screenshot-dir]   single-file build opened as file://
 const { chromium } = require('playwright');
-const http = require('http'), fs = require('fs'), path = require('path');
+const http = require('http'), fs = require('fs'), path = require('path'), os = require('os'), cp = require('child_process');
+const STANDALONE = !!process.env.STANDALONE;
 const root = path.join(__dirname, '..');
 const shotDir = process.argv[2] || null;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json', '.mp3': 'audio/mpeg' };
@@ -20,6 +22,16 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
     fs.createReadStream(p).pipe(res);
   }).listen(0);
   const base = 'http://localhost:' + server.address().port + '/';
+  let fileWithAzan = null, fileNoAzan = null;
+  if (STANDALONE) {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'salah-'));
+    fs.writeFileSync(path.join(tmp, 'azan.wav'), wavBytes());
+    const build = (...a) => cp.execFileSync('node', [path.join(__dirname, 'build-standalone.js'), ...a], { stdio: 'pipe' });
+    build('--out', path.join(tmp, 'with-azan.html'), '--azan', path.join(tmp, 'azan.wav'));
+    build('--out', path.join(tmp, 'no-azan.html'), '--no-azan');
+    fileWithAzan = 'file://' + path.join(tmp, 'with-azan.html'); fileNoAzan = 'file://' + path.join(tmp, 'no-azan.html');
+    console.log('MODE: single-file build opened as file://  (' + tmp + ')');
+  } else console.log('MODE: multi-file app served over http');
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
   const nominatimUrls = [];
   const problems = [];
@@ -30,18 +42,20 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
       geolocation: opts.noGeo ? undefined : { latitude: 3.10, longitude: 101.80 },
       permissions: opts.noGeo ? ['notifications'] : ['geolocation', 'notifications'], serviceWorkers: 'allow'
     });
-    await ctx.route('https://nominatim.openstreetmap.org/**', r => { nominatimUrls.push(r.request().url()); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ address: { county: 'Hulu Langat', state: 'Selangor', country: 'Malaysia' } }) }); });
+    await ctx.route('https://nominatim.openstreetmap.org/**', r => { nominatimUrls.push(r.request().url()); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ address: { suburb: 'Bandar Sri Permaisuri', city: 'Majlis Perbandaran Kajang', county: 'Hulu Langat', state: 'Selangor', country: 'Malaysia' } }) }); });
     serveAzan = !!opts.azanFile;
     /* Headless Chromium always reports Notification.permission as 'denied'; stub it to exercise the app's code path. */
     await ctx.addInitScript(() => {
-      Object.defineProperty(Notification, 'permission', { get: () => 'granted' });
-      ServiceWorkerRegistration.prototype.showNotification = function (t, o) { (window.__notes = window.__notes || []).push({ t: t, o: o }); return Promise.resolve(); };
+      window.Notification = class { constructor(t, o) { (window.__notes = window.__notes || []).push({ t: t, o: o }); } };
+      Notification.permission = 'granted';
+      Notification.requestPermission = () => Promise.resolve('granted');
+      if (window.ServiceWorkerRegistration) ServiceWorkerRegistration.prototype.showNotification = function (t, o) { (window.__notes = window.__notes || []).push({ t: t, o: o }); return Promise.resolve(); };
     });
     const page = await ctx.newPage();
     page.on('pageerror', e => problems.push('pageerror: ' + e.message));
     page.on('console', m => { if ((m.type() === 'error' && !(expect404 && /404/.test(m.text()))) || /Content Security Policy/i.test(m.text())) problems.push(m.type() + ': ' + m.text()); });
     await page.clock.install({ time: new Date(isoUtc) });
-    await page.goto(base);
+    await page.goto(STANDALONE ? (opts.azanFile ? fileWithAzan : fileNoAzan) : base);
     await page.waitForFunction(() => document.getElementById('hero-count').textContent !== '--:--:--');
     return { ctx, page };
   }
@@ -51,7 +65,7 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
   {
     const { ctx, page } = await open('2026-10-01T17:10:57Z');
     await page.waitForFunction(() => document.getElementById('loc-name').textContent.includes('Hulu Langat'));
-    check('location label', (await txt(page, 'loc-name')) === 'Hulu Langat, Malaysia', await txt(page, 'loc-name'));
+    check('location label = district, NOT the council ("Majlis Perbandaran Kajang" in the lookup result)', (await txt(page, 'loc-name')) === 'Hulu Langat, Malaysia', await txt(page, 'loc-name'));
     check('place lookup sent rounded position (~1 km)', nominatimUrls.every(u => /lat=3\.10&lon=101\.80$/.test(u)) && nominatimUrls.length > 0, nominatimUrls.join(' '));
     check('date line', (await txt(page, 'date-main')) === 'Jumaat, 2 Oktober', await txt(page, 'date-main'));
     check('hijri line (reference showed "21 Rabiulakhir 1448 H")', (await txt(page, 'date-hijri')) === '21 Rabiulakhir 1448 H', await txt(page, 'date-hijri'));
@@ -61,6 +75,18 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
     check('Ends in ~04:32:0x (reference showed 04:32:03)', Math.abs(left - (4 * 3600 + 32 * 60 + 3)) <= 4, left);
     const times = await page.locator('.row .time').allTextContents();
     check('list = 5:43, 7:00, 13:04, 16:13, 19:05, 20:14', times.join(',') === '5:43,7:00,13:04,16:13,19:05,20:14', times.join(','));
+    const css = await page.evaluate(() => {
+      const g = (sel, prop) => getComputedStyle(document.querySelector(sel))[prop];
+      return { body: g('body', 'backgroundColor'), hero: g('.hero', 'backgroundColor'), heroImg: g('.hero', 'backgroundImage'),
+        row: g('.row:not(.is-now)', 'backgroundColor'), rowLine: g('.row:not(.is-now)', 'borderTopColor'), rowImg: g('.row:not(.is-now)', 'backgroundImage'),
+        act: g('.row.is-now', 'backgroundColor'), actLine: g('.row.is-now', 'borderTopColor'), actTime: g('.row.is-now .time', 'color'), actTag: g('.row.is-now .tag', 'color'),
+        name: g('.row .name', 'color'), muted: g('#date-hijri', 'color'),
+        past: document.querySelectorAll('.row.is-past, .row.is-next').length };
+    });
+    const want = { body: 'rgb(8, 33, 26)', hero: 'rgb(17, 57, 45)', row: 'rgb(12, 46, 36)', rowLine: 'rgb(40, 68, 57)', act: 'rgb(41, 56, 38)', actLine: 'rgb(228, 189, 108)', actTime: 'rgb(242, 234, 212)', actTag: 'rgb(228, 189, 108)', name: 'rgb(242, 234, 212)', muted: 'rgb(166, 173, 146)' };
+    for (const k of Object.keys(want)) check('colour ' + k + ' = ' + want[k] + ' (sampled from reference)', css[k] === want[k], css[k]);
+    check('flat fills (no gradients) on hero and cards', css.heroImg === 'none' && css.rowImg === 'none', css.heroImg + ' / ' + css.rowImg);
+    check('no dimmed/NEXT cards (reference has none)', css.past === 0, css.past);
     check('only Isyak row marked NOW', (await page.locator('.row.is-now .name').allTextContents()).join() === 'Isyak');
     if (shotDir) await page.screenshot({ path: path.join(shotDir, 'A-isyak-0110.png'), fullPage: true });
     await ctx.close();
@@ -125,7 +151,7 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
     await miss.page.click('#btn-settings');
     await miss.page.click('#azan-test');
     await miss.page.waitForSelector('#notice:not([hidden])');
-    check('missing azan file -> clear message', /not found/.test(await txt(miss.page, 'notice-text')), await txt(miss.page, 'notice-text'));
+    check('missing azan file -> clear message', /not found|No azan sound/.test(await txt(miss.page, 'notice-text')), await txt(miss.page, 'notice-text'));
     await miss.ctx.close();
     expect404 = false;
   }
@@ -139,8 +165,34 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
     await ctx.close();
   }
 
-  console.log('J. Installable + offline');
+  console.log('L. Manual place when GPS is not wanted/available');
   {
+    const { ctx, page } = await open('2026-10-02T05:10:00Z');
+    const gpsFirst = (await page.locator('.row .time').allTextContents())[0];
+    await page.click('#btn-settings');
+    const opts = await page.locator('#loc-select option').allTextContents();
+    check('picker lists Automatic (GPS) + places incl. Hulu Langat', opts[0] === 'Automatic (GPS)' && opts.includes('Hulu Langat') && opts.includes('Kuching'), opts.slice(0, 4).join(','));
+    await page.selectOption('#loc-select', 'kch');
+    await page.click('#settings-close');
+    check('label switches to Kuching', (await txt(page, 'loc-name')) === 'Kuching, Malaysia', await txt(page, 'loc-name'));
+    const kuchingFirst = (await page.locator('.row .time').allTextContents())[0];
+    check('times recalculated for Kuching (Subuh differs from Selangor ' + gpsFirst + ')', kuchingFirst !== gpsFirst, kuchingFirst);
+    await page.reload(); await page.waitForFunction(() => document.getElementById('hero-count').textContent !== '--:--:--');
+    await page.waitForTimeout(800);
+    check('manual choice survives reload; GPS does not override it', (await txt(page, 'loc-name')) === 'Kuching, Malaysia', await txt(page, 'loc-name'));
+    await page.click('#btn-refresh');
+    await page.waitForFunction(() => document.getElementById('loc-name').textContent.includes('Hulu Langat'), null, { timeout: 5000 }).catch(() => {});
+    check('refresh button returns to GPS', (await txt(page, 'loc-name')) === 'Hulu Langat, Malaysia', await txt(page, 'loc-name'));
+    if (shotDir) { await page.click('#btn-settings'); await page.screenshot({ path: path.join(shotDir, 'settings-dialog.png') }); }
+    await ctx.close();
+  }
+
+  console.log('J. Installable + offline');
+  if (STANDALONE) {
+    const { ctx, page } = await open('2026-10-02T05:10:00Z');
+    check('single file: nothing to fetch, no service worker, no manifest', await page.evaluate(() => !navigator.serviceWorker.controller && !document.querySelector('link[rel=manifest]') && !!window.SALAH_EMBED));
+    await ctx.close();
+  } else {
     const { ctx, page } = await open('2026-10-02T05:10:00Z');
     const m = await page.evaluate(() => fetch('manifest.webmanifest').then(r => r.json()));
     check('manifest: standalone, start_url, 192+512 icons', m.display === 'standalone' && m.start_url === './' && m.icons.some(i => i.sizes === '192x192') && m.icons.some(i => i.sizes === '512x512'));

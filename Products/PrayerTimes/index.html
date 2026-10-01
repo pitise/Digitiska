@@ -67,7 +67,8 @@
 </main>
 
 <dialog id="settings" aria-labelledby="settings-title">
-  <h2 id="settings-title">Azan</h2>
+  <h2 id="settings-title">Settings</h2>
+  <h3>Azan</h3>
 
   <label class="switch-row" for="azan-toggle">
     <span>Play azan at prayer time</span>
@@ -78,6 +79,10 @@
   <button id="azan-test" class="btn" type="button">Test azan</button>
 
   <p class="small warn">Azan and alerts only work while this app is open on your device. A web app cannot wake a closed or locked phone.</p>
+
+  <h3>Location</h3>
+  <label class="small" for="loc-select">Automatic uses your GPS. If GPS is unavailable, choose your place.</label>
+  <select id="loc-select" class="field"></select>
 
   <div id="install-block">
     <h3>Install</h3>
@@ -94,6 +99,7 @@
 
 <audio id="azan" preload="none"></audio>
 <script src="prayer.js"></script>
+<script src="place.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
