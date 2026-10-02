@@ -1,5 +1,5 @@
 // Unit test for place-name selection.  node tools/test-place.js
-const { placeName, PLACES } = require('../place.js');
+const { placeName, parseIpLocation, PLACES } = require('../place.js');
 let bad = 0;
 const eq = (name, got, want) => { const ok = got === want; if (!ok) bad++; console.log((ok ? '  ok    ' : '  FAIL  ') + name + (ok ? '' : '   got "' + got + '", want "' + want + '"')); };
 const A = address => ({ address });
@@ -16,6 +16,17 @@ eq('only council names -> empty (caller keeps coordinates)', placeName(A({ city:
 eq('no address -> empty', placeName({}), '');
 eq('null -> empty', placeName(null), '');
 eq('no country -> place only', placeName(A({ county: 'Hulu Langat' })), 'Hulu Langat');
+const ip = parseIpLocation;
+eq('ip: ipwho-style response', JSON.stringify(ip({ success: true, latitude: 3.1, longitude: 101.8, city: 'Kajang', country: 'Malaysia' })), JSON.stringify({ lat: 3.1, lng: 101.8, name: 'Kajang, Malaysia' }));
+eq('ip: lat/lon + country_name style', JSON.stringify(ip({ lat: 3.1, lon: 101.8, city: 'Kuala Lumpur', country_name: 'Malaysia' })), JSON.stringify({ lat: 3.1, lng: 101.8, name: 'Kuala Lumpur, Malaysia' }));
+eq('ip: success=false rejected', ip({ success: false, message: 'limit' }), null);
+eq('ip: error field rejected', ip({ error: true, reason: 'RateLimited' }), null);
+eq('ip: missing coordinates rejected', ip({ city: 'X' }), null);
+eq('ip: out-of-range rejected', ip({ latitude: 95, longitude: 10 }), null);
+eq('ip: 0,0 rejected (usual "unknown" value)', ip({ latitude: 0, longitude: 0 }), null);
+eq('ip: numeric strings accepted', ip({ latitude: '3.1', longitude: '101.8', city: 'Kajang', country: 'Malaysia' }).lat, 3.1);
+eq('ip: council city dropped, country kept', ip({ latitude: 3.1, longitude: 101.8, city: 'Majlis Perbandaran Kajang', country: 'Malaysia' }).name, 'Malaysia');
+eq('ip: null rejected', ip(null), null);
 const ids = PLACES.map(p => p.id);
 eq('place ids are unique', new Set(ids).size, ids.length);
 eq('all places inside Malaysia bounding box', PLACES.every(p => p.lat > 0.8 && p.lat < 7.5 && p.lng > 99.5 && p.lng < 119.5), true);

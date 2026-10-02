@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-8mupdYZ6LmpJ0QGOSYsX5w7gCcROeKAWueMo5umWTGc=' 'sha256-1TLrlPj+MnhG23HhsQ9c+q4pNLo7+iV0qmDHJhn9z+w='; style-src 'sha256-6FCn4TxSjouR8HLfxdB2iyolvOMHI+BjT89fd53f93M='; img-src data:; media-src blob:; connect-src https://nominatim.openstreetmap.org; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-8mupdYZ6LmpJ0QGOSYsX5w7gCcROeKAWueMo5umWTGc=' 'sha256-f3FJyaN2DKhOIJiTxkL2JzYSkpAdD+q2G5mXZ9XSK5E='; style-src 'sha256-6FCn4TxSjouR8HLfxdB2iyolvOMHI+BjT89fd53f93M='; img-src data:; media-src blob:; connect-src https://nominatim.openstreetmap.org https://ipwho.is; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="origin">
 <!-- Salah Times - single-file build. Source and checks: Products/PrayerTimes in the Digitiska repo. -->
 <title>Salah Times - Prayer Times</title>
@@ -232,7 +232,7 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
   <p class="small warn">Azan and alerts only work while this app is open on your device. A web app cannot wake a closed or locked phone.</p>
 
   <h3>Location</h3>
-  <label class="small" for="loc-select">Automatic uses your GPS. If GPS is unavailable, choose your place.</label>
+  <label class="small" for="loc-select">Automatic uses your phone's location. If that is unavailable, choose your place. "Approximate" uses your internet connection (sends your internet address to ipwho.is; can be far off on mobile data).</label>
   <select id="loc-select" class="field"></select>
 
   <div id="install-block">
@@ -242,7 +242,7 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
   </div>
 
   <h3>Privacy</h3>
-  <p class="small">No account, no ads, no analytics. Your position stays on this device. To show a place name, a position rounded to about 1 km is sent to OpenStreetMap Nominatim.</p>
+  <p class="small">No account, no ads, no analytics. Your position stays on this device. To show a place name, a position rounded to about 1 km is sent to OpenStreetMap Nominatim. Only if you choose Approximate location, your internet address is sent to ipwho.is.</p>
   <p class="small">Times are calculated on this device and can differ by a minute or two from the official e-solat timetable.</p>
 
   <button id="settings-close" class="btn primary" type="button">Close</button>
@@ -404,7 +404,25 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
     { id: 'lbn',  name: 'Labuan',          lat: 5.283, lng: 115.231 }
   ];
 
-  var api = { placeName: placeName, PLACES: PLACES };
+  /*
+   * Reads an internet-address (IP) location response. Accepts the common shapes:
+   *   { success, latitude, longitude, city, region, country }   or   { lat, lon|lng, city, country_name|country }
+   * Returns { lat, lng, name } or null if the data is missing, failed, or out of range.
+   */
+  function parseIpLocation(data) {
+    if (!data || data.success === false || data.error) return null;
+    var lat = Number(data.latitude != null ? data.latitude : data.lat);
+    var lng = Number(data.longitude != null ? data.longitude : (data.lon != null ? data.lon : data.lng));
+    if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    if (lat === 0 && lng === 0) return null;
+    var city = String(data.city || data.region || '').trim();
+    if (COUNCIL.test(city)) city = '';
+    var country = String(data.country_name || data.country || '').trim();
+    var name = [city, country].filter(Boolean).join(', ') || lat.toFixed(2) + '°, ' + lng.toFixed(2) + '°';
+    return { lat: lat, lng: lng, name: name };
+  }
+
+  var api = { placeName: placeName, parseIpLocation: parseIpLocation, PLACES: PLACES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PlaceInfo = api;
 })(typeof self !== 'undefined' ? self : this);
@@ -431,6 +449,7 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
   var KEY = { loc: 'pt.loc', azan: 'pt.azan', fired: 'pt.fired' };
   var FIRE_WINDOW_MS = 90 * 1000;
   var AZAN_URL = 'audio/azan.mp3';
+  var IP_URL = 'https://ipwho.is/';   /* internet-address location, used only when the user chooses it */
   var EMBED = window.SALAH_EMBED || null;
 
   function $(id) { return document.getElementById(id); }
@@ -607,7 +626,7 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
 
   /* ---------- location ---------- */
   function setLocLabel() {
-    el.locName.textContent = loc ? (loc.name || 'Locating…') : DEFAULT_LOC.name;
+    el.locName.textContent = loc ? (loc.name || 'Locating…') + (loc.source === 'ip' ? ' (approx.)' : '') : DEFAULT_LOC.name;
   }
 
   function distKm(a, b) {
@@ -644,7 +663,7 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
     if (!force && loc && loc.manual) return;
     function done() { el.btnRefresh.classList.remove('spin'); el.btnRefresh.disabled = false; }
     if (!navigator.geolocation) {
-      showNotice(loc ? 'This browser cannot update location. Showing the last known place.' : 'This browser has no location support. Showing Kuala Lumpur times. Choose your place in Settings (bell icon).');
+      showNotice(loc ? 'This browser cannot update location. Showing the last known place.' : 'This browser has no location support. Showing Kuala Lumpur times. Choose your place in Settings (bell icon), or use an approximate location.', loc ? '' : 'Use approximate', loc ? null : locateByIp);
       return;
     }
     el.btnRefresh.classList.add('spin');
@@ -652,13 +671,14 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
     navigator.geolocation.getCurrentPosition(function (pos) {
       done();
       var next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      var moved = !loc || loc.manual || distKm(loc, next) > 1;
-      var keepName = !moved && loc.named && !loc.manual;
+      var moved = !loc || loc.manual || loc.source === 'ip' || distKm(loc, next) > 1;
+      var keepName = !moved && loc.named && !loc.manual && loc.source !== 'ip';
       loc = {
         lat: next.lat, lng: next.lng,
         name: keepName ? loc.name : next.lat.toFixed(2) + '°, ' + next.lng.toFixed(2) + '°',
         named: keepName,
-        manual: false
+        manual: false,
+        source: 'gps'
       };
       syncSelect();
       save(KEY.loc, loc);
@@ -670,12 +690,40 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
     }, function (err) {
       done();
       var denied = err && err.code === 1;
-      if (loc) showNotice('Could not update location. Showing the last known place.', 'Retry', function () { detect(true); });
-      else if (denied) showNotice('Location is off, so Kuala Lumpur times are shown. Allow location for this site in your browser settings, or choose your place in Settings (bell icon).');
-      else showNotice('Could not get your location. Showing Kuala Lumpur times. You can choose your place in Settings (bell icon).', 'Retry', function () { detect(true); });
+      if (loc && loc.source === 'ip') showNotice(APPROX_NOTICE, 'Retry GPS', function () { detect(true); });
+      else if (loc) showNotice('Could not update location. Showing the last known place.', 'Retry', function () { detect(true); });
+      else if (denied) showNotice('Location is off, so Kuala Lumpur times are shown. Allow location for this site in your browser settings, choose your place in Settings (bell icon), or use an approximate location.', 'Use approximate', locateByIp);
+      else showNotice('Could not get your location. Showing Kuala Lumpur times. Choose your place in Settings (bell icon), or use an approximate location.', 'Use approximate', locateByIp);
       syncSelect();
       setLocLabel();
     }, { enableHighAccuracy: false, timeout: 15000, maximumAge: force ? 0 : 600000 });
+  }
+
+  /* ---------- approximate location from the internet address (only when the user chooses it) ---------- */
+  var APPROX_NOTICE = 'Approximate location from your internet connection. On mobile data it can be far off. Choose your place in Settings (bell icon) for accurate times.';
+
+  function locateByIp() {
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
+    lookupSeq++;                                   /* cancel any pending name lookup */
+    el.btnRefresh.classList.add('spin');
+    fetch(IP_URL, { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', referrerPolicy: 'no-referrer' })
+      .then(function (r) { if (!r.ok) throw new Error('lookup ' + r.status); return r.json(); })
+      .then(function (data) {
+        var found = PlaceInfo.parseIpLocation(data);
+        if (!found) throw new Error('no position');
+        loc = { lat: found.lat, lng: found.lng, name: found.name, named: true, manual: false, source: 'ip' };
+        save(KEY.loc, loc);
+        showNotice(APPROX_NOTICE, 'Retry GPS', function () { detect(true); });
+        setLocLabel();
+        syncSelect();
+        tick();
+      })
+      .catch(function () {
+        showNotice('Could not get an approximate location. Choose your place in Settings (bell icon).');
+        syncSelect();
+      })
+      .then(function () { clearTimeout(timer); el.btnRefresh.classList.remove('spin'); });
   }
 
   /* ---------- manual place (when GPS is unavailable) ---------- */
@@ -683,6 +731,9 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
     var o = make('option', '', 'Automatic (GPS)');
     o.value = 'gps';
     el.locSelect.appendChild(o);
+    var ip = make('option', '', 'Approximate (internet connection)');
+    ip.value = 'ip';
+    el.locSelect.appendChild(ip);
     PlaceInfo.PLACES.forEach(function (p) {
       var opt = make('option', '', p.name);
       opt.value = p.id;
@@ -690,16 +741,17 @@ input:checked + .switch::after { transform: translateX(22px); background: #1b160
     });
   }
   function syncSelect() {
-    el.locSelect.value = loc && loc.manual ? loc.placeId : 'gps';
+    el.locSelect.value = loc && loc.manual ? loc.placeId : (loc && loc.source === 'ip' ? 'ip' : 'gps');
   }
   function onPlaceChosen() {
     var v = el.locSelect.value;
     if (v === 'gps') { detect(true); return; }
+    if (v === 'ip') { locateByIp(); return; }
     var place = null;
     PlaceInfo.PLACES.forEach(function (p) { if (p.id === v) place = p; });
     if (!place) return;
     lookupSeq++;                                   /* cancel any pending name lookup */
-    loc = { lat: place.lat, lng: place.lng, name: place.name + ', Malaysia', named: true, manual: true, placeId: place.id };
+    loc = { lat: place.lat, lng: place.lng, name: place.name + ', Malaysia', named: true, manual: true, placeId: place.id, source: 'manual' };
     save(KEY.loc, loc);
     hideNotice();
     setLocLabel();

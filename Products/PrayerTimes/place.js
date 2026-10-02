@@ -53,7 +53,25 @@
     { id: 'lbn',  name: 'Labuan',          lat: 5.283, lng: 115.231 }
   ];
 
-  var api = { placeName: placeName, PLACES: PLACES };
+  /*
+   * Reads an internet-address (IP) location response. Accepts the common shapes:
+   *   { success, latitude, longitude, city, region, country }   or   { lat, lon|lng, city, country_name|country }
+   * Returns { lat, lng, name } or null if the data is missing, failed, or out of range.
+   */
+  function parseIpLocation(data) {
+    if (!data || data.success === false || data.error) return null;
+    var lat = Number(data.latitude != null ? data.latitude : data.lat);
+    var lng = Number(data.longitude != null ? data.longitude : (data.lon != null ? data.lon : data.lng));
+    if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    if (lat === 0 && lng === 0) return null;
+    var city = String(data.city || data.region || '').trim();
+    if (COUNCIL.test(city)) city = '';
+    var country = String(data.country_name || data.country || '').trim();
+    var name = [city, country].filter(Boolean).join(', ') || lat.toFixed(2) + '°, ' + lng.toFixed(2) + '°';
+    return { lat: lat, lng: lng, name: name };
+  }
+
+  var api = { placeName: placeName, parseIpLocation: parseIpLocation, PLACES: PLACES };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.PlaceInfo = api;
 })(typeof self !== 'undefined' ? self : this);

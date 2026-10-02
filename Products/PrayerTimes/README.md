@@ -15,6 +15,14 @@ Installable prayer-times web app (PWA), JAKIM / Malaysia method. Rebuilt on 02.O
   - Alerts: the single file uses the page notification, which many phones refuse. The azan sound plays; the pop-up may not appear.
 - **No azan sound is inside the current build** (none was provided). Put `azan.mp3` in `audio/`, run the build command, and the file carries the sound (about 4/3 of the mp3 size). Whatever audio you embed is not something this project's audit can vouch for.
 
+## Location when the phone's location setting is not available
+Order of options, most accurate first:
+1. **Phone location (GPS/Wi-Fi):** automatic. Needs the browser's location permission, and a secure (HTTPS) page. A file opened from WhatsApp/email often cannot use it.
+2. **Choose your place** (Settings, bell icon): a list of 22 Malaysian towns/districts, about 5 km accuracy, works anywhere, no permission, no network.
+3. **Approximate (internet connection):** looks up a position from your internet address through `ipwho.is`. Only runs if you tap "Use approximate" on the notice or pick it in Settings; nothing is sent before that. The label shows "(approx.)".
+   - It can be far off, especially on mobile data (the position may be the carrier's, not yours). Each 1 degree of longitude moves prayer times by about 4 minutes, so a wrong city can shift times by several minutes.
+   - It sends your internet address to `ipwho.is` (no referrer sent). **That service was not reachable from the build sandbox, so its availability, rate limits, terms and exact response format are unverified.** The parser accepts the common response shapes and is tested only against mocked responses. If it fails, the app shows a message and keeps the current place. The host is the `IP_URL` constant in `app.js` plus the CSP host in `index.html` and `tools/build-standalone.js`.
+
 ## What it does
 - Location at the top (device GPS; place name looked up once and remembered). The name is the district (for example Hulu Langat); local councils such as "Majlis Perbandaran ..." are never shown. If GPS is unavailable you can pick a place in Settings.
 - The current prayer, how long until it ends, and the next prayer.
@@ -56,7 +64,7 @@ Opening `index.html` by double-click still works for viewing, but without instal
 
 ## Privacy and security
 - No account, no ads, no analytics, no cookies, no third-party scripts, fonts or images.
-- Strict Content-Security-Policy in `index.html`: scripts, styles, images and audio only from this app; the single outside host allowed is `nominatim.openstreetmap.org`.
+- Strict Content-Security-Policy in `index.html`: scripts, styles, images and audio only from this app; the only outside hosts allowed are `nominatim.openstreetmap.org` (place name) and `ipwho.is` (opt-in approximate location).
 - That host receives a position rounded to ~1 km (2 decimals) to turn coordinates into a place name. If it fails, the app shows coordinates. Nothing else leaves the device.
 - Stored on the device only: last location, the azan on/off flag, a marker so the same azan does not repeat.
 - `node tools/audit.js` checks every shipped file for dangerous patterns (eval, dynamic imports, sockets, XHR/beacon, HTML injection, obfuscation, inline script/handlers), lists every external URL, checks the CSP, and prints SHA-256 hashes. It passed on 02.Oct.2026.
@@ -64,8 +72,8 @@ Opening `index.html` by double-click still works for viewing, but without instal
 
 ## Tests
 - `node tools/audit.js` - security audit (no dependencies).
-- `node tools/test-place.js` - place-name selection (13 checks).
-- `NODE_PATH=$(npm root -g) node tools/e2e.js [screenshot-dir]` - 61 checks in headless Chromium (`STANDALONE=1` runs 60 against the single file opened as `file://`) with mocked clock, GPS and timezone: reproduces the reference screenshot, every prayer window, midnight rollover, azan on/off, missing azan file, denied location, offline reload, no console/CSP errors. Notifications and the place-name service are stubbed in this test (headless Chromium reports notifications as denied; the sandbox could not reach the real service), so those two are exercised in code path only.
+- `node tools/test-place.js` - place-name selection and internet-lookup parsing (23 checks).
+- `NODE_PATH=$(npm root -g) node tools/e2e.js [screenshot-dir]` - 71 checks in headless Chromium (`STANDALONE=1` runs 70 against the single file opened as `file://`) with mocked clock, GPS and timezone: reproduces the reference screenshot, every prayer window, midnight rollover, azan on/off, missing azan file, denied location, offline reload, no console/CSP errors. Notifications and the place-name service are stubbed in this test (headless Chromium reports notifications as denied; the sandbox could not reach the real service), so those two are exercised in code path only.
 - `NODE_PATH=$(npm root -g) node tools/make-icons.js` - re-renders PNG icons from `icons/icon.svg`.
 
 ## Files

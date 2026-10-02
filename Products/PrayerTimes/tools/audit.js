@@ -4,7 +4,7 @@
 // Fails (exit 1) on any pattern that could exfiltrate data, run injected code, or load third-party code.
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const root = path.join(__dirname, '..');
-const ALLOWED_HOSTS = ['nominatim.openstreetmap.org'];          // the only third-party host
+const ALLOWED_HOSTS = ['nominatim.openstreetmap.org', 'ipwho.is'];   // the only third-party hosts (place name; opt-in approximate location)
 const sha256hex = buf => crypto.createHash('sha256').update(buf).digest('hex');
 const cspHash = text => "'sha256-" + crypto.createHash('sha256').update(text, 'utf8').digest('base64') + "'";
 let failures = 0;
@@ -91,7 +91,7 @@ function auditStandalone(file) {
   auditHtmlCommon(html);
   const links = [...html.matchAll(/<link\b[^>]*href="([^"]*)"/g)].map(m => m[1]);
   links.every(h => h.startsWith('data:')) ? pass(links.length + ' <link> tags, all data: URIs (icons)') : fail('a <link> points outside the file');
-  /connect-src https:\/\/nominatim\.openstreetmap\.org(;|$)/.test(csp) ? pass('connect-src allows only nominatim.openstreetmap.org') : fail('connect-src is not exactly the one allowed host');
+  /connect-src https:\/\/nominatim\.openstreetmap\.org https:\/\/ipwho\.is(;|$)/.test(csp) ? pass('connect-src allows only the 2 listed hosts') : fail('connect-src is not exactly the 2 allowed hosts');
   console.log('4. SHA-256 of the shipped file (compare this after sharing to detect tampering)');
   console.log('        ' + sha256hex(buf) + '  ' + path.basename(file));
 }

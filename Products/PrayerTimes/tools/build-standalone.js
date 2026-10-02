@@ -40,7 +40,7 @@ const csp = [
   'style-src ' + hash(styleText),
   'img-src data:',
   'media-src blob:',
-  'connect-src https://nominatim.openstreetmap.org',
+  'connect-src https://nominatim.openstreetmap.org https://ipwho.is',
   "base-uri 'none'",
   "form-action 'none'"
 ].join('; ');

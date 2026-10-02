@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self' blob:; connect-src 'self' https://nominatim.openstreetmap.org; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src 'self' blob:; connect-src 'self' https://nominatim.openstreetmap.org https://ipwho.is; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="origin">
 <title>Salah Times - Prayer Times</title>
 <meta name="description" content="Current prayer, time left, and today's prayer times using the JAKIM (Malaysia) method.">
@@ -81,7 +81,7 @@
   <p class="small warn">Azan and alerts only work while this app is open on your device. A web app cannot wake a closed or locked phone.</p>
 
   <h3>Location</h3>
-  <label class="small" for="loc-select">Automatic uses your GPS. If GPS is unavailable, choose your place.</label>
+  <label class="small" for="loc-select">Automatic uses your phone's location. If that is unavailable, choose your place. "Approximate" uses your internet connection (sends your internet address to ipwho.is; can be far off on mobile data).</label>
   <select id="loc-select" class="field"></select>
 
   <div id="install-block">
@@ -91,7 +91,7 @@
   </div>
 
   <h3>Privacy</h3>
-  <p class="small">No account, no ads, no analytics. Your position stays on this device. To show a place name, a position rounded to about 1 km is sent to OpenStreetMap Nominatim.</p>
+  <p class="small">No account, no ads, no analytics. Your position stays on this device. To show a place name, a position rounded to about 1 km is sent to OpenStreetMap Nominatim. Only if you choose Approximate location, your internet address is sent to ipwho.is.</p>
   <p class="small">Times are calculated on this device and can differ by a minute or two from the official e-solat timetable.</p>
 
   <button id="settings-close" class="btn primary" type="button">Close</button>

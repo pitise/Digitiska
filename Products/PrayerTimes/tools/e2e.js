@@ -33,7 +33,8 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
     console.log('MODE: single-file build opened as file://  (' + tmp + ')');
   } else console.log('MODE: multi-file app served over http');
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
-  const nominatimUrls = [];
+  const nominatimUrls = [], ipRequests = [];
+  let ipMode = 'ok';
   const problems = [];
 
   async function open(isoUtc, opts = {}) {
@@ -43,6 +44,11 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
       permissions: opts.noGeo ? ['notifications'] : ['geolocation', 'notifications'], serviceWorkers: 'allow'
     });
     await ctx.route('https://nominatim.openstreetmap.org/**', r => { nominatimUrls.push(r.request().url()); r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ address: { suburb: 'Bandar Sri Permaisuri', city: 'Majlis Perbandaran Kajang', county: 'Hulu Langat', state: 'Selangor', country: 'Malaysia' } }) }); });
+    await ctx.route('https://ipwho.is/**', r => {
+      ipRequests.push({ url: r.request().url(), referer: r.request().headers()['referer'] || '' });
+      if (ipMode === 'fail') return r.abort();
+      r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ success: true, latitude: 6.12, longitude: 102.24, city: 'Kota Bharu', country: 'Malaysia' }) });
+    });
     serveAzan = !!opts.azanFile;
     /* Headless Chromium always reports Notification.permission as 'denied'; stub it to exercise the app's code path. */
     await ctx.addInitScript(() => {
@@ -53,7 +59,7 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
     });
     const page = await ctx.newPage();
     page.on('pageerror', e => problems.push('pageerror: ' + e.message));
-    page.on('console', m => { if ((m.type() === 'error' && !(expect404 && /404/.test(m.text()))) || /Content Security Policy/i.test(m.text())) problems.push(m.type() + ': ' + m.text()); });
+    page.on('console', m => { if ((m.type() === 'error' && !(expect404 && /404/.test(m.text())) && !(ipMode === 'fail' && /ERR_FAILED/.test(m.text()))) || /Content Security Policy/i.test(m.text())) problems.push(m.type() + ': ' + m.text()); });
     await page.clock.install({ time: new Date(isoUtc) });
     await page.goto(STANDALONE ? (opts.azanFile ? fileWithAzan : fileNoAzan) : base);
     await page.waitForFunction(() => document.getElementById('hero-count').textContent !== '--:--:--');
@@ -185,6 +191,38 @@ const wavBytes = () => { const n = 8000, b = Buffer.alloc(44 + n * 2); b.write('
     check('refresh button returns to GPS', (await txt(page, 'loc-name')) === 'Hulu Langat, Malaysia', await txt(page, 'loc-name'));
     if (shotDir) { await page.click('#btn-settings'); await page.screenshot({ path: path.join(shotDir, 'settings-dialog.png') }); }
     await ctx.close();
+  }
+
+  console.log('M. Approximate location (internet connection) when phone location is unavailable');
+  {
+    ipRequests.length = 0; ipMode = 'ok';
+    const { ctx, page } = await open('2026-10-02T05:10:00Z', { noGeo: true });
+    await page.waitForSelector('#notice:not([hidden])');
+    check('no internet-address request is made unless the user opts in', ipRequests.length === 0, JSON.stringify(ipRequests));
+    check('denied notice offers "Use approximate"', (await txt(page, 'notice-action')) === 'Use approximate', await txt(page, 'notice-action'));
+    const klSubuh = (await page.locator('.row .time').allTextContents())[0];
+    await page.click('#notice-action');
+    await page.waitForFunction(() => document.getElementById('loc-name').textContent.includes('(approx.)'), null, { timeout: 5000 }).catch(() => {});
+    check('label = "Kota Bharu, Malaysia (approx.)"', (await txt(page, 'loc-name')) === 'Kota Bharu, Malaysia (approx.)', await txt(page, 'loc-name'));
+    check('one request, no referrer sent', ipRequests.length === 1 && ipRequests[0].referer === '', JSON.stringify(ipRequests));
+    check('times recalculated for the new position (Subuh differs from KL ' + klSubuh + ')', (await page.locator('.row .time').allTextContents())[0] !== klSubuh);
+    check('notice warns it is approximate and offers Retry GPS', /Approximate location/.test(await txt(page, 'notice-text')) && (await txt(page, 'notice-action')) === 'Retry GPS', await txt(page, 'notice-text'));
+    await page.reload(); await page.waitForFunction(() => document.getElementById('hero-count').textContent !== '--:--:--');
+    await page.waitForSelector('#notice:not([hidden])');
+    check('approximate choice remembered after reload, still labelled approx.', (await txt(page, 'loc-name')) === 'Kota Bharu, Malaysia (approx.)', await txt(page, 'loc-name'));
+    await page.click('#btn-settings');
+    check('Settings picker shows "Approximate (internet connection)"', (await page.locator('#loc-select option:checked').textContent()) === 'Approximate (internet connection)');
+    await page.selectOption('#loc-select', 'hl'); await page.click('#settings-close');
+    check('choosing a place replaces the approximate one', (await txt(page, 'loc-name')) === 'Hulu Langat, Malaysia', await txt(page, 'loc-name'));
+    await ctx.close();
+
+    ipRequests.length = 0; ipMode = 'fail';
+    const bad = await open('2026-10-02T05:10:00Z', { noGeo: true });
+    await bad.page.waitForSelector('#notice:not([hidden])');
+    await bad.page.click('#notice-action');
+    await bad.page.waitForFunction(() => /Could not get an approximate/.test(document.getElementById('notice-text').textContent), null, { timeout: 5000 }).catch(() => {});
+    check('lookup failure -> clear message, stays on Kuala Lumpur', /Could not get an approximate/.test(await txt(bad.page, 'notice-text')) && (await txt(bad.page, 'loc-name')).includes('Kuala Lumpur'), await txt(bad.page, 'notice-text') + ' | ' + await txt(bad.page, 'loc-name'));
+    await bad.ctx.close(); ipMode = 'ok';
   }
 
   console.log('J. Installable + offline');

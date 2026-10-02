@@ -20,6 +20,7 @@
   var KEY = { loc: 'pt.loc', azan: 'pt.azan', fired: 'pt.fired' };
   var FIRE_WINDOW_MS = 90 * 1000;
   var AZAN_URL = 'audio/azan.mp3';
+  var IP_URL = 'https://ipwho.is/';   /* internet-address location, used only when the user chooses it */
   var EMBED = window.SALAH_EMBED || null;
 
   function $(id) { return document.getElementById(id); }
@@ -196,7 +197,7 @@
 
   /* ---------- location ---------- */
   function setLocLabel() {
-    el.locName.textContent = loc ? (loc.name || 'Locating…') : DEFAULT_LOC.name;
+    el.locName.textContent = loc ? (loc.name || 'Locating…') + (loc.source === 'ip' ? ' (approx.)' : '') : DEFAULT_LOC.name;
   }
 
   function distKm(a, b) {
@@ -233,7 +234,7 @@
     if (!force && loc && loc.manual) return;
     function done() { el.btnRefresh.classList.remove('spin'); el.btnRefresh.disabled = false; }
     if (!navigator.geolocation) {
-      showNotice(loc ? 'This browser cannot update location. Showing the last known place.' : 'This browser has no location support. Showing Kuala Lumpur times. Choose your place in Settings (bell icon).');
+      showNotice(loc ? 'This browser cannot update location. Showing the last known place.' : 'This browser has no location support. Showing Kuala Lumpur times. Choose your place in Settings (bell icon), or use an approximate location.', loc ? '' : 'Use approximate', loc ? null : locateByIp);
       return;
     }
     el.btnRefresh.classList.add('spin');
@@ -241,13 +242,14 @@
     navigator.geolocation.getCurrentPosition(function (pos) {
       done();
       var next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      var moved = !loc || loc.manual || distKm(loc, next) > 1;
-      var keepName = !moved && loc.named && !loc.manual;
+      var moved = !loc || loc.manual || loc.source === 'ip' || distKm(loc, next) > 1;
+      var keepName = !moved && loc.named && !loc.manual && loc.source !== 'ip';
       loc = {
         lat: next.lat, lng: next.lng,
         name: keepName ? loc.name : next.lat.toFixed(2) + '°, ' + next.lng.toFixed(2) + '°',
         named: keepName,
-        manual: false
+        manual: false,
+        source: 'gps'
       };
       syncSelect();
       save(KEY.loc, loc);
@@ -259,12 +261,40 @@
     }, function (err) {
       done();
       var denied = err && err.code === 1;
-      if (loc) showNotice('Could not update location. Showing the last known place.', 'Retry', function () { detect(true); });
-      else if (denied) showNotice('Location is off, so Kuala Lumpur times are shown. Allow location for this site in your browser settings, or choose your place in Settings (bell icon).');
-      else showNotice('Could not get your location. Showing Kuala Lumpur times. You can choose your place in Settings (bell icon).', 'Retry', function () { detect(true); });
+      if (loc && loc.source === 'ip') showNotice(APPROX_NOTICE, 'Retry GPS', function () { detect(true); });
+      else if (loc) showNotice('Could not update location. Showing the last known place.', 'Retry', function () { detect(true); });
+      else if (denied) showNotice('Location is off, so Kuala Lumpur times are shown. Allow location for this site in your browser settings, choose your place in Settings (bell icon), or use an approximate location.', 'Use approximate', locateByIp);
+      else showNotice('Could not get your location. Showing Kuala Lumpur times. Choose your place in Settings (bell icon), or use an approximate location.', 'Use approximate', locateByIp);
       syncSelect();
       setLocLabel();
     }, { enableHighAccuracy: false, timeout: 15000, maximumAge: force ? 0 : 600000 });
+  }
+
+  /* ---------- approximate location from the internet address (only when the user chooses it) ---------- */
+  var APPROX_NOTICE = 'Approximate location from your internet connection. On mobile data it can be far off. Choose your place in Settings (bell icon) for accurate times.';
+
+  function locateByIp() {
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
+    lookupSeq++;                                   /* cancel any pending name lookup */
+    el.btnRefresh.classList.add('spin');
+    fetch(IP_URL, { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', referrerPolicy: 'no-referrer' })
+      .then(function (r) { if (!r.ok) throw new Error('lookup ' + r.status); return r.json(); })
+      .then(function (data) {
+        var found = PlaceInfo.parseIpLocation(data);
+        if (!found) throw new Error('no position');
+        loc = { lat: found.lat, lng: found.lng, name: found.name, named: true, manual: false, source: 'ip' };
+        save(KEY.loc, loc);
+        showNotice(APPROX_NOTICE, 'Retry GPS', function () { detect(true); });
+        setLocLabel();
+        syncSelect();
+        tick();
+      })
+      .catch(function () {
+        showNotice('Could not get an approximate location. Choose your place in Settings (bell icon).');
+        syncSelect();
+      })
+      .then(function () { clearTimeout(timer); el.btnRefresh.classList.remove('spin'); });
   }
 
   /* ---------- manual place (when GPS is unavailable) ---------- */
@@ -272,6 +302,9 @@
     var o = make('option', '', 'Automatic (GPS)');
     o.value = 'gps';
     el.locSelect.appendChild(o);
+    var ip = make('option', '', 'Approximate (internet connection)');
+    ip.value = 'ip';
+    el.locSelect.appendChild(ip);
     PlaceInfo.PLACES.forEach(function (p) {
       var opt = make('option', '', p.name);
       opt.value = p.id;
@@ -279,16 +312,17 @@
     });
   }
   function syncSelect() {
-    el.locSelect.value = loc && loc.manual ? loc.placeId : 'gps';
+    el.locSelect.value = loc && loc.manual ? loc.placeId : (loc && loc.source === 'ip' ? 'ip' : 'gps');
   }
   function onPlaceChosen() {
     var v = el.locSelect.value;
     if (v === 'gps') { detect(true); return; }
+    if (v === 'ip') { locateByIp(); return; }
     var place = null;
     PlaceInfo.PLACES.forEach(function (p) { if (p.id === v) place = p; });
     if (!place) return;
     lookupSeq++;                                   /* cancel any pending name lookup */
-    loc = { lat: place.lat, lng: place.lng, name: place.name + ', Malaysia', named: true, manual: true, placeId: place.id };
+    loc = { lat: place.lat, lng: place.lng, name: place.name + ', Malaysia', named: true, manual: true, placeId: place.id, source: 'manual' };
     save(KEY.loc, loc);
     hideNotice();
     setLocLabel();
