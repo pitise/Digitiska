@@ -15,6 +15,9 @@ Your Lovable export `solat_v7.html`, with the home-screen install, location and 
 - Footnote under the source line: "© 2026 Digitiska" (same wording as the earlier app's footer).
 - "Salah Times" is the name of the older, superseded `Products/PrayerTimes` app, not of this one.
 
+## Hosting on Firebase (free, no git) - added 12.Oct.2026
+`dist/Solat-firebase.zip` (built by `node tools/make-host.js`) is a ready-to-deploy Firebase Hosting folder: `firebase.json` + `public/` + `DEPLOY.md` with the exact steps. Tested locally with Firebase's own hosting emulator (no login, no network): correct file types, no-cache on the page, manifest and service worker, manifest without errors, offline reload. **Not tested against the real Firebase service or with a real account.** Use a separate Google account and a neutral project name: the project name becomes the public address (`<project-id>.web.app`); the site itself contains no email address.
+
 ## Files
 - `Solat.html` - the whole app in one file (40 KB, was 847 KB). Share this by WhatsApp or email. No server, no database, no git.
 - `manifest.webmanifest`, `sw.js`, `icons/` - only needed to make the app installable (see below).

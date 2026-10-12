@@ -10,3 +10,13 @@ for (const f of ['icon-192.png', 'icon-512.png', 'apple-touch-icon.png']) fs.cop
 console.log('wrote ' + out + ': ' + fs.readdirSync(out).join(', '));
 try { fs.rmSync(path.join(root, 'dist', 'Solat-host.zip'), { force: true }); cp.execFileSync('zip', ['-qr', path.join(root, 'dist', 'Solat-host.zip'), '.'], { cwd: out }); console.log('wrote dist/Solat-host.zip'); }
 catch (e) { try { cp.execFileSync('python3', ['-c', "import shutil,sys;shutil.make_archive(sys.argv[1],'zip',sys.argv[2])", path.join(root, 'dist', 'Solat-host'), out]); console.log('wrote dist/Solat-host.zip'); } catch (e2) { console.log('zip not created: ' + e2.message); } }
+
+// Firebase Hosting package: dist/firebase/ = firebase.json + public/ (the host files) + DEPLOY.md, and dist/Solat-firebase.zip
+const fb = path.join(root, 'dist', 'firebase');
+fs.rmSync(fb, { recursive: true, force: true });
+fs.mkdirSync(fb, { recursive: true });
+fs.cpSync(out, path.join(fb, 'public'), { recursive: true });
+for (const f of ['firebase.json', 'DEPLOY.md']) fs.copyFileSync(path.join(root, f), path.join(fb, f));
+console.log('wrote ' + fb + ': ' + fs.readdirSync(fb).join(', '));
+try { fs.rmSync(path.join(root, 'dist', 'Solat-firebase.zip'), { force: true }); cp.execFileSync('zip', ['-qr', path.join(root, 'dist', 'Solat-firebase.zip'), '.'], { cwd: fb }); console.log('wrote dist/Solat-firebase.zip'); }
+catch (e) { try { cp.execFileSync('python3', ['-c', "import shutil,sys;shutil.make_archive(sys.argv[1],'zip',sys.argv[2])", path.join(root, 'dist', 'Solat-firebase'), fb]); console.log('wrote dist/Solat-firebase.zip'); } catch (e2) { console.log('firebase zip not created: ' + e2.message); } }
