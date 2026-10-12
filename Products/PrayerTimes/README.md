@@ -1,3 +1,5 @@
+> **WARNING (12.Oct.2026): do not use or share this app's Subuh time.** Its calculation was tuned to match a screenshot of an earlier app, not to JAKIM. Compared with JAKIM's published times for zone SGR01 (01-31.Okt.2026, 7 sample days), this app's Subuh is **about 10-11 minutes earlier** than JAKIM's, and Asar, Maghrib and Isyak are 1-3 minutes earlier. The "matches the reference screenshot" statements below are true of the screenshot only. Use `Products/Solat/` instead (its built-in calculation is within 1-2 minutes of JAKIM on the same days).
+
 # Salah Times (Waktu Solat)
 
 Installable prayer-times web app (PWA), JAKIM / Malaysia method. Rebuilt on 02.Oct.2026 (restyled and made shareable 02.Oct.2026) from two screenshots of the earlier Hercules version, because its source was not available. This is a re-creation of what the screenshots showed, not a copy of the original code.
