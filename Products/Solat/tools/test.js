@@ -38,7 +38,7 @@ function jakimBody(url, mode) {
     const net = { nominatim: [], ip: [], jakim: [], mirror: [], other: [] }, problems = [];
     await ctx.route(/^https?:\/\/(?!localhost)/, r => {
       const u = r.request().url(), cors = { 'access-control-allow-origin': '*' };
-      if (/nominatim/.test(u)) { net.nominatim.push(u); return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(o.address ? (/search/.test(u) ? [{ lat: '3.1', lon: '101.8', address: o.address }] : { address: o.address }) : (/search/.test(u) ? [] : { address: {} })) }); }
+      if (/nominatim/.test(u)) { net.nominatim.push(u); const zoom = (/zoom=(\d+)/.exec(u) || [])[1]; const addr = (o.addressByZoom && o.addressByZoom[zoom]) || o.address; return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(addr ? (/search/.test(u) ? [{ lat: '3.1', lon: '101.8', address: addr }] : { address: addr }) : (/search/.test(u) ? [] : { address: {} })) }); }
       if (/ipwho|ipapi|geojs/.test(u)) { net.ip.push(u); if (o.ipFail) return r.abort(); return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify({ success: true, latitude: 6.1234, longitude: 102.2412, city: o.ipCity || 'Kota Bharu', region: 'Kelantan' }) }); }
       if (/waktusolat/.test(u)) { MIRROR_HITS.push(u); net.mirror.push(u); return r.abort(); }
       if (/e-solat\.gov\.my/.test(u)) {
@@ -177,6 +177,27 @@ function jakimBody(url, mode) {
     await r.page.selectOption('#city', 'Singapura'); await r.page.waitForTimeout(1000);
     check('Singapore -> no JAKIM zone, calculation used', !/Zon /.test(await r.t('src')), await r.t('src'));
     await r.ctx.close();
+    // REAL CASE from the user's phone: the first place lookup returns only "Bangi Lama" + state (no district field)
+    r = await open(fixedFile, { grant: true, addressByZoom: { 12: { suburb: 'Bangi Lama', state: 'Selangor', country: 'Malaysia' }, 8: { county: 'Hulu Langat', state: 'Selangor', country: 'Malaysia' } }, wait: 3500 });
+    const zooms = r.net.nominatim.map(u => (/zoom=(\d+)/.exec(u) || [])[1]);
+    check('"Bangi Lama" case: 1st lookup has no district -> 2nd lookup at district level finds Hulu Langat -> zone SGR01', zooms.join() === '12,8' && /Jadual JAKIM e-Solat · Zon SGR01/.test(await r.t('src')), zooms.join() + ' | ' + await r.t('src'));
+    check('place name still shows the local place: "Bangi Lama, Selangor"', (await r.t('loc-name')) === 'Bangi Lama, Selangor', await r.t('loc-name'));
+    check('JAKIM times shown (' + REAL_LIST.join(' ') + ')', (await r.page.locator('#list .t').allTextContents()).join() === REAL_LIST.join(), (await r.page.locator('#list .t').allTextContents()).join());
+    for (let i = 0; i < 5; i++) await r.page.click('#brand');
+    const dtxt = await r.page.locator('#dbg').textContent();
+    check('tapping the footnote 5 times shows the diagnostic (zone + what the place service answered)', await r.page.locator('#dbg').isVisible() && /"zone": "SGR01"/.test(dtxt) && /Bangi Lama/.test(dtxt) && /"zoom8"/.test(dtxt), dtxt.slice(0, 160));
+    for (let i = 0; i < 5; i++) await r.page.click('#brand');
+    check('5 more taps hide it again', !(await r.page.locator('#dbg').isVisible()));
+    await r.ctx.close();
+
+    r = await open(fixedFile, { grant: true, addressByZoom: { 12: { suburb: 'Bangi Lama', district: 'Hulu Langat', state: 'Selangor' } }, wait: 2000 });
+    check('district under the key "district": found at once, no extra lookups', r.net.nominatim.length === 1 && /Zon SGR01/.test(await r.t('src')), r.net.nominatim.length + ' lookups | ' + await r.t('src'));
+    await r.ctx.close();
+
+    r = await open(fixedFile, { grant: true, addressByZoom: { 12: { suburb: 'Bangi Lama', state: 'Selangor' } }, wait: 4500 });
+    const z3 = r.net.nominatim.map(u => (/zoom=(\d+)/.exec(u) || [])[1]);
+    check('no lookup ever gives a district -> exactly 3 lookups (12, 8, 10), then the honest footer hint, no JAKIM request for a guessed zone', z3.join() === '12,8,10' && /pilih daerah untuk jadual JAKIM/.test(await r.t('src')) && r.net.jakim.every(u => u.startsWith('zone=WLY01')), z3.join() + ' | ' + await r.t('src') + ' | ' + r.net.jakim.join(' '));
+    await r.ctx.close();
     check('api.waktusolat.app was never contacted in any scenario above', MIRROR_HITS.length === 0, MIRROR_HITS.join(' ')); }
 
   if (origArg) {
@@ -185,8 +206,8 @@ function jakimBody(url, mode) {
     const doms = {};
     for (const [k, url] of [['v7', 'file://' + origArg], ['v7b', 'file://' + origArg], ['fixed', fixedFile]]) { jakimMode = 'abort'; const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); jakimMode = 'ok'; doms[k] = await r.page.evaluate(() => document.querySelector('main').outerHTML); await r.page.evaluate(() => { const b = document.getElementById('brand'); if (b) b.style.display = 'none'; }); shots[k] = await r.page.screenshot({ fullPage: true }); await r.ctx.close(); }
     const styleOf = f => (/<style>([\s\S]*?)<\/style>/.exec(fs.readFileSync(f, 'utf8')) || [])[1];
-    check('stylesheet is the same as your v7 plus exactly one added rule (the footnote spacing)', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', ''), 'differs');
-    check('page content (<main> markup) is identical to your v7 plus exactly the added footnote', doms.v7 === doms.fixed.replace(/\s*<footer id="brand">[^<]*<\/footer>/, ''), 'differs');
+    check('stylesheet is the same as your v7 plus only the footnote spacing and the hidden-diagnostic rule', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', '').replace(/\n#dbg\{[^}]*\}/, ''), 'differs');
+    check('page content (<main> markup) is identical to your v7 plus only the footnote and the hidden diagnostic element', doms.v7 === doms.fixed.replace(/\s*<footer id="brand">[^<]*<\/footer>/, '').replace(/\s*<pre id="dbg"[^>]*><\/pre>/, ''), 'differs');
     const p = await browser.newPage();
     const cmp = async (x, y) => p.evaluate(async ([a, b]) => { const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = 'data:image/png;base64,' + s; }); const [u, v] = await Promise.all([load(a), load(b)]); if (u.width !== v.width || u.height !== v.height) return { size: false }; const g = i => { const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const t = c.getContext('2d'); t.drawImage(i, 0, 0); return t.getImageData(0, 0, i.width, i.height).data; }; const d1 = g(u), d2 = g(v); let n = 0, max = 0, big = 0; for (let k = 0; k < d1.length; k += 4) { const d = Math.max(Math.abs(d1[k] - d2[k]), Math.abs(d1[k + 1] - d2[k + 1]), Math.abs(d1[k + 2] - d2[k + 2])); if (d) { n++; max = Math.max(max, d); if (d > 4) big++; } } return { size: true, differing: n, maxDelta: max, over4: big }; }, [x.toString('base64'), y.toString('base64')]);
     const control = await cmp(shots.v7, shots.v7b), real = await cmp(shots.v7, shots.fixed); await p.close();

@@ -65,6 +65,7 @@ select,input[type=text]{width:100%;padding:8px 10px;border-radius:10px;border:1p
 .row{display:flex;gap:8px}
 footer{text-align:center;color:var(--mut);font-size:11px;margin-top:10px}
 #brand{margin-top:4px}
+#dbg{font:11px/1.4 ui-monospace,monospace;color:var(--mut);white-space:pre-wrap;word-break:break-all;margin:8px 0 0;padding:8px;border:1px solid var(--line);border-radius:8px;text-align:left}
 dialog{border:1px solid var(--line);border-radius:22px;background:var(--bg2);color:var(--fg);max-width:420px;width:calc(100% - 32px);padding:20px}
 dialog::backdrop{background:#000a}
 dialog h2{margin:0 0 12px;font-family:Georgia,serif;font-weight:500}
@@ -129,6 +130,7 @@ dialog h3{margin:18px 0 8px;font-size:15px;color:var(--gold2)}
 
   <footer id="src">Waktu Solat</footer>
   <footer id="brand">© 2026 Digitiska</footer>
+  <pre id="dbg" hidden></pre>
 </main>
 
 <dialog id="settings">
@@ -278,8 +280,11 @@ const ZSTATES=[...new Set(ZONES.map(z=>z[1]))];
 const WHOLE={};for(const st of ZSTATES){const zs=ZONES.filter(z=>z[1]===st);if(zs.length===1)WHOLE[st]=zs[0][0]}
 const zState=s=>{s=String(s||"").toLowerCase();if(!s)return "";if(/kuala lumpur|putrajaya|labuan|wilayah/.test(s))return "Wilayah Persekutuan";if(/penang|pinang/.test(s))return "Pulau Pinang";if(/malacca|melaka/.test(s))return "Melaka";return ZSTATES.find(x=>x.toLowerCase()===s)||""};
 const zoneByName=(name,state)=>{const k=zNorm(name);if(!k)return null;if(state)return ZIDX[state+"|"+k]||null;const set=ZBYNAME[k];return set&&set.size===1?[...set][0]:null};
+const ZSKIP=/^(country|country_code|postcode|house_number|road|state|ISO3166-2-lvl\d+)$/i;
 function zoneFromAddress(a){a=a||{};const st=a.state?zState(a.state):"";if(a.state&&!st)return null;
-  for(const c of [a.county,a.state_district,a.city_district,a.city,a.town,a.municipality,a.village,a.suburb,a.state]){const z=zoneByName(c,st);if(z)return z}
+  const first=[a.county,a.state_district,a.district,a.city_district,a.city,a.town,a.municipality,a.village,a.suburb];
+  const rest=Object.keys(a).filter(k=>!ZSKIP.test(k)).map(k=>a[k]);
+  for(const c of first.concat(rest,[a.state])){const z=zoneByName(c,st);if(z)return z}
   return st&&WHOLE[st]||null}
 const JK_MON={jan:1,feb:2,mac:3,mar:3,apr:4,mei:5,may:5,jun:6,jul:7,ogo:8,ogs:8,aug:8,sep:9,okt:10,oct:10,nov:11,dis:12,dec:12};
 const jkMin=s=>{const m=/^(\d{1,2}):(\d{2})/.exec(String(s||""));if(!m)return NaN;const h=+m[1],n=+m[2];return h<24&&n<60?h*60+n:NaN};
@@ -300,15 +305,28 @@ async function fetchJSON(url){
   try{const r=await fetch(url,{signal:controller.signal});if(!r.ok)throw new Error("Network");return await r.json()}finally{clearTimeout(timer)}
 }
 function validCoordinates(lat,lng){return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180}
+const dbg={};
+const nomReverse=(zoom,lat,lng)=>fetchJSON(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=${zoom}&accept-language=ms&lat=${r2(lat).toFixed(2)}&lon=${r2(lng).toFixed(2)}`);
+/* If the first lookup gave no JAKIM zone, ask again at district level (zoom 8, then 10), one request per 1.1 s as the service asks */
+async function refineZone(place,request){
+  for(const z of [8,10]){
+    if(place.zone||request!==locationRequest)return;
+    try{await new Promise(r=>setTimeout(r,1100));if(request!==locationRequest)return;
+      const j=await nomReverse(z,place.lat,place.lng);dbg["zoom"+z]=j.address||{};
+      const zn=zoneFromAddress(j.address);if(zn){place.zone=zn;dbg.zone=zn;st.loc=place;SS("loc",place);render(true);return}}catch{}}
+}
 async function setPlace(lat,lng,name,source,request,zone){
   if(request!==locationRequest||!validCoordinates(lat,lng))return false;
   const place={name:name||`${lat.toFixed(3)}, ${lng.toFixed(3)}`,lat,lng,city:null,source,zone:zone||null};
   st.loc=place;citySel.value="__gps";render(true);
-  if(!name||(!place.zone&&inMY(place))){try{const j=await fetchJSON(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=12&accept-language=ms&lat=${r2(lat).toFixed(2)}&lon=${r2(lng).toFixed(2)}`);
-    const a=j.address||{};if(!name){const nm=pickName(a);if(nm)place.name=nm+(a.state&&a.state!==nm?", "+a.state:"")}
+  if(!name||(!place.zone&&inMY(place))){try{const j=await nomReverse(12,lat,lng);
+    const a=j.address||{};dbg.zoom12=a;if(!name){const nm=pickName(a);if(nm)place.name=nm+(a.state&&a.state!==nm?", "+a.state:"")}
     if(!place.zone)place.zone=zoneFromAddress(a)}catch{}}
   if(request!==locationRequest)return false;
-  st.loc=place;SS("loc",place);render(true);return true;
+  dbg.lat=r2(lat);dbg.lng=r2(lng);dbg.zone=place.zone;
+  st.loc=place;SS("loc",place);render(true);
+  if(!place.zone&&inMY(place))refineZone(place,request);
+  return true;
 }
 async function ipLocate(request){
   const srcs=[["https://ipwho.is/",j=>j.success!==false&&[+j.latitude,+j.longitude,goodName(j.city)&&(goodName(j.city)+(j.region?", "+j.region:""))]],
@@ -467,6 +485,9 @@ $("sound").onchange=e=>{const v=e.target.value;if(v==="custom"){$("file").click(
 $("file").onchange=async e=>{const f=e.target.files[0];if(!f)return;await saveFile(f);if(customURL)URL.revokeObjectURL(customURL);customURL=URL.createObjectURL(f);st.sound="custom";SS("sound","custom");$("sound").value="custom";soundStatus()};
 $("sound-status").onclick=()=>{if(st.sound==="custom")$("file").click()};
 $("azan-test").onclick=play;$("azan-stop").onclick=stopSound;$("stopbar").onclick=stopSound;
+
+let taps=0,tapT=0;$("brand").onclick=()=>{const n=Date.now();taps=n-tapT<1500?taps+1:1;tapT=n;if(taps>=5){taps=0;const d=$("dbg");d.hidden=!d.hidden;
+  if(!d.hidden)d.textContent=JSON.stringify({place:{name:st.loc.name,source:st.loc.source||null,zone:st.loc.zone||null,lat:r2(st.loc.lat),lng:r2(st.loc.lng)},footer:$("src").textContent,placeService:dbg},null,1)}};
 
 /* Start */
 render(true);

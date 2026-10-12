@@ -10,6 +10,10 @@ Your Lovable export `solat_v7.html`, with the home-screen install, location and 
 - JAKIM data is cached on the device (up to 45 days back), so it still works offline. It asks for the whole year first (one request); if JAKIM refuses `period=year` it uses the current month, which means the first day of next month is calculated until then.
 - **Not verified:** `period=year` against the real server (only `period=month` was seen); that a page served from a normal https address can read JAKIM (only a local file was tested; if JAKIM allows all sites this works, otherwise the app falls back to calculation); real Nominatim district names for every place; JAKIM's terms of use (the community guide says the copyright is JAKIM's and the address may change without notice). The JAKIM data in the browser tests is mocked, using the real 12.Okt.2026 row.
 
+## Zone matching fix (12.Oct.2026)
+Found on a real phone: at "Bangi Lama, Selangor" the footer said "Kiraan pada peranti ... pilih daerah", i.e. no JAKIM zone was matched, so the app calculated (1-2 min off JAKIM). Cause: the matcher only looked at a fixed list of address fields and made one place lookup. Now it matches against every value of the address, and if the first lookup gives no zone it asks again at district level (zoom 8, then 10, one request per 1.1 s). Tested with mocked answers shaped like the reported case. **Not verified against the real place service**: whether its district-level answer for Bangi Lama contains "Hulu Langat" is unknown.
+Hidden diagnostic: tap the "© 2026 Digitiska" line 5 times to show the rounded position (about 1 km), the zone, and what the place service answered; 5 more taps hide it. If a place still gets no zone, choose its district in the Lokasi list.
+
 ## Name and footnote (updated 12.Oct.2026)
 - Home-screen / bookmark name is **Solat Times** (manifest `name` and `short_name`, page title, `apple-mobile-web-app-title`, `application-name`). The in-app heading still reads "Waktu Solat". The link-preview title (`og:title`, shown when the link is shared in chat apps) is still "Waktu Solat".
 - Footnote under the source line: "© 2026 Digitiska" (same wording as the earlier app's footer).
@@ -21,7 +25,7 @@ Your Lovable export `solat_v7.html`, with the home-screen install, location and 
 ## Files
 - `Solat.html` - the whole app in one file (40 KB, was 847 KB). Share this by WhatsApp or email. No server, no database, no git.
 - `manifest.webmanifest`, `sw.js`, `icons/` - only needed to make the app installable (see below).
-- `tools/` - `apply-fix.py`, `apply-jakim.py` and `apply-name-brand.py` (the exact patches applied to v7), `make-host.js` (builds `dist/host/` and `dist/Solat-host.zip`), `test.js` (55 browser checks), `test-jakim.js` (zone matching and JAKIM-answer parser), `jakim-test.html` (one-click test: can a web page read JAKIM?).
+- `tools/` - `apply-fix.py`, `apply-jakim.py`, `apply-name-brand.py` and `apply-zonefix.py` (the exact patches applied to v7), `make-host.js` (builds `dist/host/` and `dist/Solat-host.zip`), `test.js` (62 browser checks), `test-jakim.js` (zone matching and JAKIM-answer parser), `jakim-test.html` (one-click test: can a web page read JAKIM?).
 
 ## Add to home screen: what is and is not possible
 - **A downloaded file opened from the phone cannot be installed as an app by any browser.** The browser needs a real web address (HTTPS) to install from. From a file, "Add to home screen" gives at best a plain shortcut.
