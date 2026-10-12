@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JAKIM access test</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:640px;margin:24px auto;padding:0 16px}button{font:inherit;padding:10px 16px;margin:4px 0}
+#out{white-space:pre-wrap;background:#f3f3f3;padding:12px;border-radius:8px;margin-top:12px;min-height:5em}.ok{color:#0a7a2f}.bad{color:#b00020}</style></head>
+<body>
+<h1>JAKIM e-Solat access test</h1>
+<p>Checks whether a web page (this one) is allowed to read the JAKIM timetable directly. It only asks JAKIM for one month of one zone. Nothing is sent anywhere else.</p>
+<button id="go" type="button">Run test</button>
+<div id="out">Press "Run test".</div>
+<script>
+const URL_ = 'https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&period=month&zone=SGR01';
+const out = document.getElementById('out');
+const say = (cls, text) => { out.className = cls; out.textContent = text; };
+document.getElementById('go').onclick = async () => {
+  say('', 'Testing...');
+  const where = location.protocol + '//' + (location.host || '(local file)');
+  try {
+    const r = await fetch(URL_, { credentials: 'omit' });
+    const text = await r.text();
+    let j; try { j = JSON.parse(text); } catch { say('bad', 'RESULT: reached JAKIM but the answer was not JSON.\nHTTP ' + r.status + '\nFirst 300 characters:\n' + text.slice(0, 300)); return; }
+    const n = j.prayerTime ? j.prayerTime.length : 0, f = n ? j.prayerTime[0] : null;
+    say('ok', 'RESULT: OK - this page CAN read JAKIM directly.\nOpened from: ' + where + '\nHTTP ' + r.status + ', status "' + j.status + '", zone ' + j.zone + ', ' + n + ' days.\n' +
+      (f ? 'First day: ' + f.date + '  Subuh ' + f.fajr + '  Zohor ' + f.dhuhr + '  Maghrib ' + f.maghrib + '\n' : '') +
+      'Please send me this whole message.');
+  } catch (e) {
+    let reachable = false;
+    try { await fetch(URL_, { mode: 'no-cors', credentials: 'omit' }); reachable = true; } catch {}
+    say('bad', reachable
+      ? 'RESULT: BLOCKED BY JAKIM (CORS) - the server answers, but does not let web pages read it.\nOpened from: ' + where + '\nBrowser message: ' + e.message + '\nPlease send me this whole message.'
+      : 'RESULT: NETWORK ERROR - could not reach JAKIM at all from this page (internet, VPN, or firewall?).\nOpened from: ' + where + '\nBrowser message: ' + e.message + '\nTry opening https://www.e-solat.gov.my/ in another tab, then run again.');
+  }
+};
+</script></body></html>
