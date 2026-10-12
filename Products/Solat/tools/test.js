@@ -63,8 +63,9 @@ function jakimBody(url, mode) {
 
   console.log('A. Standalone file opened from disk (file://) - how you downloaded it');
   { const { ctx, page, problems, t } = await open(fixedFile, { grant: true, address: { town: 'Kajang', state: 'Selangor' } });
-    check('phone/touch: page title stays "Solat" (v7 rewrote it every second, which can become the shortcut name)', (await page.title()) === 'Solat', await page.title());
-    check('home-screen titles: apple-mobile-web-app-title + application-name = Solat', await page.evaluate(() => document.querySelector('meta[name=apple-mobile-web-app-title]').content === 'Solat' && document.querySelector('meta[name=application-name]').content === 'Solat'));
+    check('phone/touch: page title is "Solat Times" and stays fixed (v7 rewrote it every second, which can become the shortcut name)', (await page.title()) === 'Solat Times', await page.title());
+    check('home-screen titles: apple-mobile-web-app-title + application-name = Solat Times', await page.evaluate(() => document.querySelector('meta[name=apple-mobile-web-app-title]').content === 'Solat Times' && document.querySelector('meta[name=application-name]').content === 'Solat Times'));
+    check('brand footnote "© 2026 Digitiska" shown below the source line', await page.evaluate(() => { const b = document.getElementById('brand'), s = document.getElementById('src'); return !!b && b.textContent === '© 2026 Digitiska' && b.getBoundingClientRect().top >= s.getBoundingClientRect().bottom && getComputedStyle(b).display !== 'none'; }));
     check('no data: manifest any more (the cause of the invalid start_url)', await page.evaluate(() => !/^data:/.test(document.querySelector('link[rel=manifest]').getAttribute('href'))));
     check('icons embedded (favicon + apple-touch-icon are the PrayerTimes icon, small)', await page.evaluate(() => ['icon', 'apple-touch-icon'].every(r => /^data:image\/png;base64,/.test(document.querySelector('link[rel="' + r + '"]').getAttribute('href')) && document.querySelector('link[rel="' + r + '"]').getAttribute('href').length < 8000)));
     check('in-app brand text unchanged: "Waktu Solat"', (await page.locator('.brand').textContent()) === 'Waktu Solat');
@@ -81,7 +82,7 @@ function jakimBody(url, mode) {
     check('manifest is a real file URL', /^http:\/\/localhost:\d+\/manifest\.webmanifest$/.test(man.url), man.url.slice(0, 60));
     check('manifest has NO parse errors (v7 had: start_url ignored)', man.errors.length === 0, JSON.stringify(man.errors.map(e => e.message)));
     const m = JSON.parse(man.data);
-    check('name = Solat, short_name = Solat', m.name === 'Solat' && m.short_name === 'Solat', m.name + '/' + m.short_name);
+    check('name = Solat Times, short_name = Solat Times (fits a home-screen label: 11 characters)', m.name === 'Solat Times' && m.short_name === 'Solat Times', m.name + '/' + m.short_name);
     check('start_url resolves inside the site, display standalone', /\/$/.test(m.start_url) || m.start_url === './' || /localhost/.test(m.start_url), m.start_url + ' ' + m.display);
     const ic = await page.evaluate(async () => { const r = []; for (const s of ['icons/icon-192.png', 'icons/icon-512.png']) { const x = await fetch(s); const b = await x.blob(); const bm = await createImageBitmap(b); r.push(x.ok + ':' + bm.width + 'x' + bm.height); } return r; });
     check('icon files load: 192x192 and 512x512', ic.join() === 'true:192x192,true:512x512', ic.join());
@@ -182,10 +183,10 @@ function jakimBody(url, mode) {
     console.log('G. Looks identical to your v7 (pixel comparison, same time, same place, no notice)');
     const addr = { county: 'Hulu Langat', state: 'Selangor' }, shots = {};
     const doms = {};
-    for (const [k, url] of [['v7', 'file://' + origArg], ['v7b', 'file://' + origArg], ['fixed', fixedFile]]) { jakimMode = 'abort'; const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); jakimMode = 'ok'; shots[k] = await r.page.screenshot({ fullPage: true }); doms[k] = await r.page.evaluate(() => document.querySelector('main').outerHTML); await r.ctx.close(); }
+    for (const [k, url] of [['v7', 'file://' + origArg], ['v7b', 'file://' + origArg], ['fixed', fixedFile]]) { jakimMode = 'abort'; const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); jakimMode = 'ok'; doms[k] = await r.page.evaluate(() => document.querySelector('main').outerHTML); await r.page.evaluate(() => { const b = document.getElementById('brand'); if (b) b.style.display = 'none'; }); shots[k] = await r.page.screenshot({ fullPage: true }); await r.ctx.close(); }
     const styleOf = f => (/<style>([\s\S]*?)<\/style>/.exec(fs.readFileSync(f, 'utf8')) || [])[1];
-    check('stylesheet is byte-for-byte the same as your v7', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')), 'differs');
-    check('page content (<main> markup) is identical to your v7 in the same situation', doms.v7 === doms.fixed, 'differs');
+    check('stylesheet is the same as your v7 plus exactly one added rule (the footnote spacing)', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', ''), 'differs');
+    check('page content (<main> markup) is identical to your v7 plus exactly the added footnote', doms.v7 === doms.fixed.replace(/\s*<footer id="brand">[^<]*<\/footer>/, ''), 'differs');
     const p = await browser.newPage();
     const cmp = async (x, y) => p.evaluate(async ([a, b]) => { const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = 'data:image/png;base64,' + s; }); const [u, v] = await Promise.all([load(a), load(b)]); if (u.width !== v.width || u.height !== v.height) return { size: false }; const g = i => { const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const t = c.getContext('2d'); t.drawImage(i, 0, 0); return t.getImageData(0, 0, i.width, i.height).data; }; const d1 = g(u), d2 = g(v); let n = 0, max = 0, big = 0; for (let k = 0; k < d1.length; k += 4) { const d = Math.max(Math.abs(d1[k] - d2[k]), Math.abs(d1[k + 1] - d2[k + 1]), Math.abs(d1[k + 2] - d2[k + 2])); if (d) { n++; max = Math.max(max, d); if (d > 4) big++; } } return { size: true, differing: n, maxDelta: max, over4: big }; }, [x.toString('base64'), y.toString('base64')]);
     const control = await cmp(shots.v7, shots.v7b), real = await cmp(shots.v7, shots.fixed); await p.close();

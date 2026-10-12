@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Solat",
-  "short_name": "Solat",
+  "name": "Solat Times",
+  "short_name": "Solat Times",
   "description": "Jadual waktu solat Malaysia (JAKIM), solat semasa dan masa berbaki.",
   "lang": "ms",
   "start_url": "./",
