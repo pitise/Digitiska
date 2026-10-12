@@ -6,10 +6,25 @@ const root = path.join(__dirname, '..');
 const fixedFile = 'file://' + path.join(root, 'Solat.html');
 const origArg = process.argv[2] && fs.existsSync(process.argv[2]) ? path.resolve(process.argv[2]) : null;
 const shotDir = process.argv[3] || null;
-let bad = 0, total = 0;
+let bad = 0, total = 0; const MIRROR_HITS = []; let jakimMode = 'ok';
 const check = (name, ok, detail) => { total++; if (!ok) bad++; console.log((ok ? '  ok    ' : '  FAIL  ') + name + (ok ? '' : '   -> ' + detail)); };
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
 const NOW = '2026-10-12T05:10:00Z';   // 13:10 in Malaysia
+const MON = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
+// The real JAKIM SGR01 row for 12-Okt-2026 (from data pasted by the user). Its Zohor/Asar/Maghrib/Isyak differ from the app's own calculation by 1 min, so the tests can tell the two apart.
+const REAL = { imsak: '05:41:00', fajr: '05:51:00', syuruk: '06:57:00', dhuhr: '13:03:00', asr: '16:17:00', maghrib: '19:03:00', isha: '20:12:00' };
+const REAL_LIST = ['05:41', '05:51', '06:57', '13:03', '16:17', '19:03', '20:12'];        // Imsak..Isyak as shown in the list
+const CALC_LIST = ['05:41', '05:51', '06:56', '13:02', '16:17', '19:04', '20:13'];        // the app's own calculation for Hulu Langat (3.10, 101.80) that day
+function jakimBody(url, mode) {
+  const zone = (/zone=([A-Z0-9]+)/.exec(url) || [])[1] || 'SGR01', period = (/period=(\w+)/.exec(url) || [])[1];
+  const rows = []; const end = period === 'year' ? 12 : 10, start = period === 'year' ? 1 : 10;
+  for (let m = start; m <= end; m++) for (let d = 1; d <= new Date(2026, m, 0).getDate(); d++) {
+    const row = Object.assign({ hijri: '1448-01-01', date: String(d).padStart(2, '0') + '-' + MON[m - 1] + '-2026', day: 'Monday', dhuha: '07:22:00' }, REAL);
+    if (mode === 'far') { row.fajr = '05:11:00'; row.imsak = '05:01:00'; }   // 40 minutes off
+    rows.push(row);
+  }
+  return JSON.stringify({ prayerTime: rows, status: 'OK!', serverTime: '2026-10-12 16:45:13', periodType: period, lang: 'ms_my', zone: mode === 'wrongzone' ? 'SGR02' : zone, bearing: '291' });
+}
 
 (async () => {
   const hostDir = path.join(root, 'dist', 'host');
@@ -20,12 +35,18 @@ const NOW = '2026-10-12T05:10:00Z';   // 13:10 in Malaysia
   async function open(url, o = {}) {
     const ctx = await browser.newContext({ timezoneId: 'Asia/Kuala_Lumpur', locale: 'ms-MY', viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, hasTouch: o.touch !== false, isMobile: o.touch !== false,
       geolocation: o.grant ? { latitude: 3.10, longitude: 101.80 } : undefined, permissions: o.grant ? ['geolocation'] : [] });
-    const net = { nominatim: [], ip: [], zones: [], other: [] }, problems = [];
+    const net = { nominatim: [], ip: [], jakim: [], mirror: [], other: [] }, problems = [];
     await ctx.route(/^https?:\/\/(?!localhost)/, r => {
       const u = r.request().url(), cors = { 'access-control-allow-origin': '*' };
       if (/nominatim/.test(u)) { net.nominatim.push(u); return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify(o.address ? (/search/.test(u) ? [{ lat: '3.1', lon: '101.8', address: o.address }] : { address: o.address }) : (/search/.test(u) ? [] : { address: {} })) }); }
       if (/ipwho|ipapi|geojs/.test(u)) { net.ip.push(u); if (o.ipFail) return r.abort(); return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: JSON.stringify({ success: true, latitude: 6.1234, longitude: 102.2412, city: o.ipCity || 'Kota Bharu', region: 'Kelantan' }) }); }
-      if (/waktusolat/.test(u)) { net.zones.push(u); return r.abort(); }
+      if (/waktusolat/.test(u)) { MIRROR_HITS.push(u); net.mirror.push(u); return r.abort(); }
+      if (/e-solat\.gov\.my/.test(u)) {
+        net.jakim.push(u.replace('https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&', ''));
+        if (jakimMode === 'abort') return r.abort();
+        if (jakimMode === 'year404' && /period=year/.test(u)) return r.fulfill({ status: 404, headers: cors, body: 'no' });
+        return r.fulfill({ status: 200, contentType: 'application/json', headers: cors, body: jakimBody(u, jakimMode) });
+      }
       net.other.push(u); return r.abort();
     });
     if (o.geoPlan) await ctx.addInitScript(plan => { window.__calls = []; const seq = plan.slice(); navigator.geolocation.getCurrentPosition = (ok, err, opts) => { window.__calls.push(opts); const st = seq.shift() || { err: 2 }; setTimeout(() => st.ok ? ok({ coords: { latitude: st.ok[0], longitude: st.ok[1] } }) : err({ code: st.err }), 0); }; }, o.geoPlan);
@@ -75,13 +96,13 @@ const NOW = '2026-10-12T05:10:00Z';   // 13:10 in Malaysia
   { const { ctx, net, t } = await open(fixedFile, { grant: true, address: { suburb: 'Bandar Sri Permaisuri', city: 'Majlis Perbandaran Kajang', county: 'Hulu Langat', state: 'Selangor', country: 'Malaysia' } });
     check('label = "Hulu Langat, Selangor" (v7 showed the council)', (await t('loc-name')) === 'Hulu Langat, Selangor', await t('loc-name'));
     check('place lookup used 2-decimal position (about 1 km)', net.nominatim.length > 0 && net.nominatim.every(u => /lat=3\.10&lon=101\.80/.test(u)), net.nominatim.join(' '));
-    check('timetable zone lookup for the real position is 2-decimal', net.zones.some(u => /\/zones\/3\.1\/101\.8$/.test(u)), net.zones.join(' '));
+    check('timetable requested from JAKIM for zone SGR01 (whole year first; WLY01 first = the default place Kuala Lumpur before GPS answers)', net.jakim.includes('zone=SGR01&period=year'), net.jakim.join(' '));
     check('no internet-address lookup happened', net.ip.length === 0, net.ip.join(' '));
     check('no notice shown', await ctx.pages()[0].locator('#notice').isHidden());
     await ctx.close(); }
 
   console.log('D. Location DENIED: no silent internet lookup; clear message; approximate only on request');
-  { const { ctx, page, net, t } = await open(fixedFile, { grant: false });
+  { const { ctx, page, net, t } = await open(fixedFile, { grant: false, address: { county: 'Kota Bharu', state: 'Kelantan' } });
     check('NO internet-address request without consent (v7 sent one immediately)', net.ip.length === 0, net.ip.join(' '));
     check('message explains denied + how to allow', /Lokasi tidak dibenarkan.*benarkan Lokasi/.test(await t('notice-text')), await t('notice-text'));
     check('action button = "Guna anggaran"', (await t('notice-action')) === 'Guna anggaran', await t('notice-action'));
@@ -90,7 +111,7 @@ const NOW = '2026-10-12T05:10:00Z';   // 13:10 in Malaysia
     check('after tapping: approximate place "Kota Bharu, Kelantan"', (await t('loc-name')) === 'Kota Bharu, Kelantan', await t('loc-name'));
     check('only the first service was asked (ipwho.is)', net.ip.length === 1 && /ipwho/.test(net.ip[0]), net.ip.join(' '));
     check('approximate warning shown', /Lokasi anggaran internet/.test(await t('notice-text')), await t('notice-text'));
-    check('timetable zone lookup rounded to 2 decimals (6.12/102.24)', net.zones.some(u => /\/zones\/6\.12\/102\.24$/.test(u)), net.zones.join(' '));
+    check('approximate place Kota Bharu -> JAKIM zone KTN01', net.jakim.some(u => u === 'zone=KTN01&period=year'), net.jakim.join(' '));
     await page.reload(); await page.waitForFunction(() => document.getElementById('hero-count').textContent !== '--:--:--'); await page.waitForTimeout(600);
     check('after reload (GPS denied again): keeps the approximate place + warning, no new internet lookup', (await t('loc-name')) === 'Kota Bharu, Kelantan' && /Lokasi anggaran internet/.test(await t('notice-text')), await t('loc-name') + ' | ' + await t('notice-text'));
     await ctx.close(); }
@@ -119,14 +140,57 @@ const NOW = '2026-10-12T05:10:00Z';   // 13:10 in Malaysia
     check('permission denied is final: no second attempt', (await r.page.evaluate(() => window.__calls.length)) === 1 && /tidak dibenarkan/.test(await r.t('notice-text')), '');
     await r.ctx.close(); }
 
+  console.log('H. Timetable straight from JAKIM (mocked server; format copied from the real answer)');
+  { jakimMode = 'ok'; MIRROR_HITS.length = 0;
+    let r = await open(fixedFile, { grant: true, address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1500 });
+    const times = async () => (await r.page.locator('#list .t').allTextContents());
+    check('footer says JAKIM e-Solat and the zone', (await r.t('src')) === 'Waktu Solat · Jadual JAKIM e-Solat · Zon SGR01', await r.t('src'));
+    check("list shows JAKIM's times, not the calculation (" + REAL_LIST.join(' ') + ')', (await times()).join() === REAL_LIST.join(), (await times()).join() + ' vs calc ' + CALC_LIST.join());
+    check('requests go only to e-solat.gov.my for the timetable: zone code + period, nothing about the user', r.net.jakim.every(u => /^zone=(WLY01|SGR01)&period=(year|month)$/.test(u)) && r.net.jakim.includes('zone=SGR01&period=year'), r.net.jakim.join(' '));
+    check('Zohor started 13:03 (JAKIM)', (await r.t('hero-start')) === '13:03', await r.t('hero-start'));
+    if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'jakim-ok.png'), fullPage: true });
+    jakimMode = 'abort'; await r.page.reload(); await r.page.waitForFunction(() => document.getElementById('hero-count').textContent !== '--:--:--'); await r.page.waitForTimeout(1500);
+    check('after reload with JAKIM unreachable: cached JAKIM times still shown and labelled JAKIM', (await times()).join() === REAL_LIST.join() && /Jadual JAKIM e-Solat · Zon SGR01/.test(await r.t('src')), (await times()).join() + ' | ' + await r.t('src'));
+    await r.ctx.close();
+
+    jakimMode = 'year404'; r = await open(fixedFile, { grant: true, address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1800 });
+    check('JAKIM refuses period=year -> app falls back to period=month (and stops trying year this session) and still shows JAKIM data', r.net.jakim.filter(u => /period=year/.test(u)).length === 1 && r.net.jakim.includes('zone=SGR01&period=month') && /Jadual JAKIM e-Solat/.test(await r.t('src')), r.net.jakim.join(' ') + ' | ' + await r.t('src'));
+    await r.ctx.close();
+
+    for (const [mode, why] of [['far', 'Subuh 40 min off the calculation (garbled/wrong data)'], ['wrongzone', 'answer is for a different zone than requested'], ['abort', 'JAKIM unreachable']]) {
+      jakimMode = mode; r = await open(fixedFile, { grant: true, address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1500 });
+      const tt = (await r.page.locator('#list .t').allTextContents()).join();
+      check('rejected -> own calculation shown and labelled as such (' + why + ')', !/JAKIM e-Solat · Zon/.test(await r.t('src')) && /Kiraan pada peranti/.test(await r.t('src')) && tt === CALC_LIST.join(), await r.t('src') + ' | ' + tt);
+      await r.ctx.close(); }
+    jakimMode = 'ok';
+
+    r = await open(fixedFile, { grant: true, address: { county: 'Kajang', state: 'Selangor' }, wait: 1200 });
+    check('district not in JAKIM list -> NO guess: no request for any zone but the default place WLY01, footer asks to pick a district', r.net.jakim.every(u => u.startsWith('zone=WLY01')) && /pilih daerah untuk jadual JAKIM/.test(await r.t('src')), r.net.jakim.join(' ') + ' | ' + await r.t('src'));
+    await r.ctx.close();
+
+    r = await open(fixedFile, { grant: false, address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 800 });
+    await r.page.selectOption('#city', 'district:Selangor:Hulu Langat'); await r.page.waitForTimeout(1800);
+    check('picking a district from the list -> its zone SGR01 straight away', r.net.jakim.some(u => u === 'zone=SGR01&period=year') && /Zon SGR01/.test(await r.t('src')), r.net.jakim.join(' ') + ' | ' + await r.t('src'));
+    await r.page.selectOption('#city', 'Kuala Lumpur'); await r.page.waitForTimeout(1500);
+    check('picking Kuala Lumpur -> zone WLY01', r.net.jakim.some(u => u === 'zone=WLY01&period=year') && /Zon WLY01/.test(await r.t('src')), r.net.jakim.join(' ') + ' | ' + await r.t('src'));
+    await r.page.selectOption('#city', 'Singapura'); await r.page.waitForTimeout(1000);
+    check('Singapore -> no JAKIM zone, calculation used', !/Zon /.test(await r.t('src')), await r.t('src'));
+    await r.ctx.close();
+    check('api.waktusolat.app was never contacted in any scenario above', MIRROR_HITS.length === 0, MIRROR_HITS.join(' ')); }
+
   if (origArg) {
     console.log('G. Looks identical to your v7 (pixel comparison, same time, same place, no notice)');
-    const addr = { town: 'Kajang', state: 'Selangor' };
-    const shots = {};
-    for (const [k, url] of [['v7', 'file://' + origArg], ['fixed', fixedFile]]) { const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); shots[k] = await r.page.screenshot({ fullPage: true }); await r.ctx.close(); }
-    const same = Buffer.compare(shots.v7, shots.fixed) === 0;
-    let diff = 0, bboxInfo = null; if (!same) { const p = await browser.newPage(); diff = await p.evaluate(async ([a, b]) => { const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = 'data:image/png;base64,' + s; }); const [x, y] = await Promise.all([load(a), load(b)]); if (x.width !== y.width || x.height !== y.height) return -1; const g = i => { const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const t = c.getContext('2d'); t.drawImage(i, 0, 0); return t.getImageData(0, 0, i.width, i.height).data; }; const d1 = g(x), d2 = g(y); let n = 0, x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1; for (let k = 0; k < d1.length; k += 4) if (d1[k] !== d2[k] || d1[k + 1] !== d2[k + 1] || d1[k + 2] !== d2[k + 2]) { n++; const px = (k / 4) % x.width, py = Math.floor(k / 4 / x.width); x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); } if (n) window.__bbox = [x0, y0, x1, y1]; return n; }, [shots.v7.toString('base64'), shots.fixed.toString('base64')]); bboxInfo = await p.evaluate(() => window.__bbox || null); await p.close(); }
-    check('full-page screenshots identical (' + (same ? 'byte-for-byte' : diff + ' differing pixels') + ')', same || diff === 0, diff + ' pixels differ, box ' + JSON.stringify(bboxInfo));
+    const addr = { county: 'Hulu Langat', state: 'Selangor' }, shots = {};
+    const doms = {};
+    for (const [k, url] of [['v7', 'file://' + origArg], ['v7b', 'file://' + origArg], ['fixed', fixedFile]]) { jakimMode = 'abort'; const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); jakimMode = 'ok'; shots[k] = await r.page.screenshot({ fullPage: true }); doms[k] = await r.page.evaluate(() => document.querySelector('main').outerHTML); await r.ctx.close(); }
+    const styleOf = f => (/<style>([\s\S]*?)<\/style>/.exec(fs.readFileSync(f, 'utf8')) || [])[1];
+    check('stylesheet is byte-for-byte the same as your v7', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')), 'differs');
+    check('page content (<main> markup) is identical to your v7 in the same situation', doms.v7 === doms.fixed, 'differs');
+    const p = await browser.newPage();
+    const cmp = async (x, y) => p.evaluate(async ([a, b]) => { const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = 'data:image/png;base64,' + s; }); const [u, v] = await Promise.all([load(a), load(b)]); if (u.width !== v.width || u.height !== v.height) return { size: false }; const g = i => { const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const t = c.getContext('2d'); t.drawImage(i, 0, 0); return t.getImageData(0, 0, i.width, i.height).data; }; const d1 = g(u), d2 = g(v); let n = 0, max = 0, big = 0; for (let k = 0; k < d1.length; k += 4) { const d = Math.max(Math.abs(d1[k] - d2[k]), Math.abs(d1[k + 1] - d2[k + 1]), Math.abs(d1[k + 2] - d2[k + 2])); if (d) { n++; max = Math.max(max, d); if (d > 4) big++; } } return { size: true, differing: n, maxDelta: max, over4: big }; }, [x.toString('base64'), y.toString('base64')]);
+    const control = await cmp(shots.v7, shots.v7b), real = await cmp(shots.v7, shots.fixed); await p.close();
+    console.log('        control (v7 against v7): ' + JSON.stringify(control) + '\n        v7 against fixed:        ' + JSON.stringify(real));
+    check('screenshots: same size and no pixel differs by more than 4/255 (any smaller difference is rendering jitter on rounded corners)', real.size && real.over4 === 0, JSON.stringify(real));
     if (shotDir) { fs.writeFileSync(path.join(shotDir, 'v7.png'), shots.v7); fs.writeFileSync(path.join(shotDir, 'fixed.png'), shots.fixed); }
   }
 

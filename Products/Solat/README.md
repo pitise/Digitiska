@@ -1,11 +1,19 @@
 # Solat (fixed v7)
 
-Your Lovable export `solat_v7.html`, with the home-screen install and location problems fixed. Look and layout are unchanged: a pixel comparison of the main screen against the original (same time, same place) is identical. Fixed on 12.Oct.2026.
+Your Lovable export `solat_v7.html`, with the home-screen install, location and timetable-source problems fixed. Look and layout are unchanged: a pixel comparison of the main screen against the original (same time, same place) is identical. Fixed on 12.Oct.2026.
+
+## Timetable: directly from JAKIM (updated 12.Oct.2026)
+- The app reads the monthly/yearly timetable straight from JAKIM e-Solat (`www.e-solat.gov.my`, `esolatApi/takwimsolat`) for your zone. **`api.waktusolat.app` is no longer used.** Only the zone code (for example `SGR01`) and the period are sent to JAKIM.
+- Verified: a JAKIM answer pasted by the user (zone SGR01, Okt 2026) has the exact format the app reads, and a page opened as a local file **can** read it (user ran `tools/jakim-test.html`: "OK ... 31 days"). The calculation on the device is within 1-2 minutes of JAKIM on the 7 sample days I compared.
+- Your position is matched to a JAKIM zone by district name (Nominatim gives the district; or you pick a district in the list). A built-in table of the 58 zones is used for that. **That table comes from a community guide (github.com/acfatah/jakim-esolat-api, MIT, last updated 30.May.2020), not from JAKIM, and may be out of date.** A place that does not match a listed district (for example Kajang, Kulai) gets **no zone**: the app then calculates on the device and says "pilih daerah untuk jadual JAKIM" in the footer. It never guesses a zone.
+- Every day taken from JAKIM must pass checks: status OK, the zone in the answer equals the zone asked for, times in order, and within 20 minutes of the app's own calculation. Otherwise that day is calculated on the device and the footer says so. The footer says "Jadual JAKIM e-Solat · Zon X" only when the numbers really are JAKIM's.
+- JAKIM data is cached on the device (up to 45 days back), so it still works offline. It asks for the whole year first (one request); if JAKIM refuses `period=year` it uses the current month, which means the first day of next month is calculated until then.
+- **Not verified:** `period=year` against the real server (only `period=month` was seen); that a page served from a normal https address can read JAKIM (only a local file was tested; if JAKIM allows all sites this works, otherwise the app falls back to calculation); real Nominatim district names for every place; JAKIM's terms of use (the community guide says the copyright is JAKIM's and the address may change without notice). The JAKIM data in the browser tests is mocked, using the real 12.Okt.2026 row.
 
 ## Files
 - `Solat.html` - the whole app in one file (40 KB, was 847 KB). Share this by WhatsApp or email. No server, no database, no git.
 - `manifest.webmanifest`, `sw.js`, `icons/` - only needed to make the app installable (see below).
-- `tools/` - `apply-fix.py` (the exact patch applied to v7), `make-host.js` (builds `dist/host/` and `dist/Solat-host.zip`), `test.js` (38 checks).
+- `tools/` - `apply-fix.py` and `apply-jakim.py` (the exact patches applied to v7), `make-host.js` (builds `dist/host/` and `dist/Solat-host.zip`), `test.js` (54 browser checks), `test-jakim.js` (zone matching and JAKIM-answer parser), `jakim-test.html` (one-click test: can a web page read JAKIM?).
 
 ## Add to home screen: what is and is not possible
 - **A downloaded file opened from the phone cannot be installed as an app by any browser.** The browser needs a real web address (HTTPS) to install from. From a file, "Add to home screen" gives at best a plain shortcut.
@@ -26,10 +34,11 @@ Your Lovable export `solat_v7.html`, with the home-screen install and location p
 - Whether Chrome on Android lets a local file use location varies; that is why the denied/unavailable messages and the city list exist.
 
 ## Not changed (kept as in v7)
-- No Content-Security-Policy; the azan audio is loaded from `islamcan.com`; place search uses the browser `prompt()` box; official timetable data comes from the third-party mirror `api.waktusolat.app`. Say if you want any of these changed.
+- No Content-Security-Policy; the azan audio is loaded from `islamcan.com`; place search uses the browser `prompt()` box. Say if you want any of these changed. Other outside services still used: OpenStreetMap Nominatim (place names), and the opt-in internet-address lookup.
 
 ## Rebuild and test
 ```
 node tools/make-host.js
-NODE_PATH=$(npm root -g) node tools/test.js path/to/solat_v7.html   # original optional: enables the "identical to v7" check
+node tools/test-jakim.js
+NODE_PATH=$(npm root -g) node tools/test.js path/to/solat_v7.html   # original optional: enables the "identical to v7" checks
 ```

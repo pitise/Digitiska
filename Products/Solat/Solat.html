@@ -150,7 +150,7 @@ dialog h3{margin:18px 0 8px;font-size:15px;color:var(--gold2)}
   </div>
   <p class="small warn">Azan hanya berbunyi ketika aplikasi ini dibuka. Aplikasi web tidak boleh mengejutkan telefon yang ditutup atau dikunci.</p>
   <h3>Privasi</h3>
-  <p class="small">Tiada akaun, iklan atau analitik. Lokasi disimpan pada peranti. Nama tempat dan carian menggunakan OpenStreetMap Nominatim (kedudukan dibulatkan kira-kira 1 km). Anggaran lokasi internet hanya berjalan jika anda tekan "Guna anggaran"; ketika itu alamat IP anda dihantar kepada perkhidmatan tersebut.</p>
+  <p class="small">Tiada akaun, iklan atau analitik. Lokasi disimpan pada peranti. Jadual solat diambil terus dari e-solat.gov.my (JAKIM); hanya kod zon dihantar. Nama tempat dan carian menggunakan OpenStreetMap Nominatim (kedudukan dibulatkan kira-kira 1 km). Anggaran lokasi internet hanya berjalan jika anda tekan "Guna anggaran"; ketika itu alamat IP anda dihantar kepada perkhidmatan tersebut.</p>
   <button id="settings-close" class="btn primary" type="button" style="margin-top:10px">Tutup</button>
 </dialog>
 
@@ -254,7 +254,7 @@ methSel.innerHTML=Object.entries(METHODS).map(([k,v])=>`<option value="${k}">${v
 methSel.value=st.method;
 citySel.value=st.loc.city||"__gps";
 citySel.onchange=()=>{if(citySel.value==="__gps"){locate();return}if(citySel.value==="__search"){searchTown();return}if(citySel.value.startsWith("district:")){const [,state,name]=citySel.value.split(":");findTown(name,state);return}
-  const c=CITIES.find(c=>c[0]===citySel.value);if(!c)return;locationRequest++;st.loc={name:c[0],lat:c[1],lng:c[2],city:c[0],source:"manual"};SS("loc",st.loc);notice("");render(true)};
+  const c=CITIES.find(c=>c[0]===citySel.value);if(!c)return;locationRequest++;st.loc={name:c[0],lat:c[1],lng:c[2],city:c[0],source:"manual",zone:zoneByName(c[0],"")};SS("loc",st.loc);notice("");render(true)};
 methSel.onchange=()=>{st.method=methSel.value;SS("method",st.method);render(true)};
 
 function notice(t,actLabel,act){$("notice").hidden=!t;$("notice-text").textContent=t||"";const b=$("notice-action");b.hidden=!actLabel;b.textContent=actLabel||"";b.onclick=act||null}
@@ -265,19 +265,46 @@ const goodName=n=>{n=String(n||"").replace(/^(daerah|mukim)\s+/i,"").replace(/\s
 const pickName=a=>{for(const k of ["county","state_district","suburb","city_district","village","town","city","municipality","state"]){const v=goodName(a[k]);if(v)return v}return ""};
 /* Positions sent to outside services are rounded to 2 decimals (about 1 km). */
 const r2=x=>Math.round(x*100)/100;
+/*<jakim-pure>*/
+/* JAKIM zones (58). Source: community guide github.com/acfatah/jakim-esolat-api (MIT), last updated 30.May.2020. Not an official list. */
+const ZONES=[["JHR01","Johor",["Pulau Aur","Pulau Pemanggil"]],["JHR02","Johor",["Johor Bahru","Kota Tinggi","Mersing"]],["JHR03","Johor",["Kluang","Pontian"]],["JHR04","Johor",["Batu Pahat","Muar","Segamat","Gemas Johor"]],["KDH01","Kedah",["Kota Setar","Kubang Pasu","Pokok Sena (Daerah Kecil)"]],["KDH02","Kedah",["Kuala Muda","Yan","Pendang"]],["KDH03","Kedah",["Padang Terap","Sik"]],["KDH04","Kedah",["Baling"]],["KDH05","Kedah",["Bandar Baharu","Kulim"]],["KDH06","Kedah",["Langkawi"]],["KDH07","Kedah",["Puncak Gunung Jerai"]],["KTN01","Kelantan",["Bachok","Kota Bharu","Machang","Pasir Mas","Pasir Puteh","Tanah Merah","Tumpat","Kuala Krai","Mukim Chiku"]],["KTN03","Kelantan",["Gua Musang (Daerah Galas Dan Bertam)","Jeli"]],["MLK01","Melaka",["Melaka"]],["NGS01","Negeri Sembilan",["Tampin","Jempol"]],["NGS02","Negeri Sembilan",["Jelebu","Kuala Pilah","Port Dickson","Rembau","Seremban"]],["PHG01","Pahang",["Pulau Tioman"]],["PHG02","Pahang",["Kuantan","Pekan","Rompin","Muadzam Shah"]],["PHG03","Pahang",["Jerantut","Temerloh","Maran","Bera","Chenor","Jengka"]],["PHG04","Pahang",["Bentong","Lipis","Raub"]],["PHG05","Pahang",["Genting Sempah","Janda Baik","Bukit Tinggi"]],["PHG06","Pahang",["Cameron Highlands","Genting Higlands","Bukit Fraser"]],["PLS01","Perlis",["Kangar","Padang Besar","Arau"]],["PNG01","Pulau Pinang",["Pulau Pinang"]],["PRK01","Perak",["Tapah","Slim River","Tanjung Malim"]],["PRK02","Perak",["Kuala Kangsar","Sg. Siput (Daerah Kecil)","Ipoh","Batu Gajah","Kampar"]],["PRK03","Perak",["Lenggong","Pengkalan Hulu","Grik"]],["PRK04","Perak",["Temengor","Belum"]],["PRK05","Perak",["Kg Gajah","Teluk Intan","Bagan Datuk","Seri Iskandar","Beruas","Parit","Lumut","Sitiawan","Pulau Pangkor"]],["PRK06","Perak",["Selama","Taiping","Bagan Serai","Parit Buntar"]],["PRK07","Perak",["Bukit Larut"]],["SBH01","Sabah",["Bahagian Sandakan (Timur)","Bukit Garam","Semawang","Temanggong","Tambisan","Bandar Sandakan","Sukau"]],["SBH02","Sabah",["Beluran","Telupid","Pinangah","Terusan","Kuamut","Bahagian Sandakan (Barat)"]],["SBH03","Sabah",["Lahad Datu","Silabukan","Kunak","Sahabat","Semporna","Tungku","Bahagian Tawau (Timur)"]],["SBH04","Sabah",["Bandar Tawau","Balong","Merotai","Kalabakan","Bahagian Tawau (Barat)"]],["SBH05","Sabah",["Kudat","Kota Marudu","Pitas","Pulau Banggi","Bahagian Kudat"]],["SBH06","Sabah",["Gunung Kinabalu"]],["SBH07","Sabah",["Kota Kinabalu","Ranau","Kota Belud","Tuaran","Penampang","Papar","Putatan","Bahagian Pantai Barat"]],["SBH08","Sabah",["Pensiangan","Keningau","Tambunan","Nabawan","Bahagian Pendalaman (Atas)"]],["SBH09","Sabah",["Beaufort","Kuala Penyu","Sipitang","Tenom","Long Pa Sia","Membakut","Weston","Bahagian Pendalaman (Bawah)"]],["SGR01","Selangor",["Gombak","Petaling","Sepang","Hulu Langat","Hulu Selangor","Shah Alam"]],["SGR02","Selangor",["Kuala Selangor","Sabak Bernam"]],["SGR03","Selangor",["Klang","Kuala Langat"]],["SWK01","Sarawak",["Limbang","Lawas","Sundar","Trusan"]],["SWK02","Sarawak",["Miri","Niah","Bekenu","Sibuti","Marudi"]],["SWK03","Sarawak",["Pandan","Belaga","Suai","Tatau","Sebauh","Bintulu"]],["SWK04","Sarawak",["Sibu","Mukah","Dalat","Song","Igan","Oya","Balingian","Kanowit","Kapit"]],["SWK05","Sarawak",["Sarikei","Matu","Julau","Rajang","Daro","Bintangor","Belawai"]],["SWK06","Sarawak",["Lubok Antu","Sri Aman","Roban","Debak","Kabong","Lingga","Engkelili","Betong","Spaoh","Pusa","Saratok"]],["SWK07","Sarawak",["Serian","Simunjan","Samarahan","Sebuyau","Meludam"]],["SWK08","Sarawak",["Kuching","Bau","Lundu","Sematan"]],["SWK09","Sarawak",["Zon Khas (Kampung Patarikan)"]],["TRG01","Terengganu",["Kuala Terengganu","Marang","Kuala Nerus"]],["TRG02","Terengganu",["Besut","Setiu"]],["TRG03","Terengganu",["Hulu Terengganu"]],["TRG04","Terengganu",["Dungun","Kemaman"]],["WLY01","Wilayah Persekutuan",["Kuala Lumpur","Putrajaya"]],["WLY02","Wilayah Persekutuan",["Labuan"]]];
+const ALIAS={"petaling jaya":"petaling","alor setar":"kota setar","genting highlands":"genting higlands","gerik":"grik","sungai siput":"sg siput","kampung gajah":"kg gajah","long pasia":"long pa sia","engkilili":"engkelili","kampung patarikan":"zon khas (kampung patarikan)","sandakan":"bandar sandakan","tawau":"bandar tawau","george town":"pulau pinang"};
+const zNorm=n=>{n=goodName(n);if(!n)return "";n=n.toLowerCase().replace(/\((daerah[^)]*)\)/g," ").replace(/^(daerah|mukim|bahagian|wilayah persekutuan)\s+/,"").replace(/[.,]/g," ").replace(/\s+/g," ").trim();return ALIAS[n]||n};
+const ZIDX={},ZBYNAME={};
+for(const [code,state,areas] of ZONES)for(const a of areas){const k=zNorm(a);ZIDX[state+"|"+k]=code;(ZBYNAME[k]=ZBYNAME[k]||new Set()).add(code)}
+const ZSTATES=[...new Set(ZONES.map(z=>z[1]))];
+const WHOLE={};for(const st of ZSTATES){const zs=ZONES.filter(z=>z[1]===st);if(zs.length===1)WHOLE[st]=zs[0][0]}
+const zState=s=>{s=String(s||"").toLowerCase();if(!s)return "";if(/kuala lumpur|putrajaya|labuan|wilayah/.test(s))return "Wilayah Persekutuan";if(/penang|pinang/.test(s))return "Pulau Pinang";if(/malacca|melaka/.test(s))return "Melaka";return ZSTATES.find(x=>x.toLowerCase()===s)||""};
+const zoneByName=(name,state)=>{const k=zNorm(name);if(!k)return null;if(state)return ZIDX[state+"|"+k]||null;const set=ZBYNAME[k];return set&&set.size===1?[...set][0]:null};
+function zoneFromAddress(a){a=a||{};const st=a.state?zState(a.state):"";if(a.state&&!st)return null;
+  for(const c of [a.county,a.state_district,a.city_district,a.city,a.town,a.municipality,a.village,a.suburb,a.state]){const z=zoneByName(c,st);if(z)return z}
+  return st&&WHOLE[st]||null}
+const JK_MON={jan:1,feb:2,mac:3,mar:3,apr:4,mei:5,may:5,jun:6,jul:7,ogo:8,ogs:8,aug:8,sep:9,okt:10,oct:10,nov:11,dis:12,dec:12};
+const jkMin=s=>{const m=/^(\d{1,2}):(\d{2})/.exec(String(s||""));if(!m)return NaN;const h=+m[1],n=+m[2];return h<24&&n<60?h*60+n:NaN};
+/* JAKIM answer -> {"YYYY-MM-DD":[imsak,subuh,syuruk,zohor,asar,maghrib,isyak] in minutes after midnight}; throws if it is not what we expect */
+function jkParse(j,zone){
+  if(!j||!/^ok/i.test(String(j.status||""))||!Array.isArray(j.prayerTime)||String(j.zone||"").toUpperCase()!==zone)throw new Error("unexpected JAKIM answer");
+  const days={};
+  for(const p of j.prayerTime){const m=/^(\d{1,2})-([A-Za-z]{3})[A-Za-z]*-(\d{4})$/.exec(String(p&&p.date||""));if(!m)continue;const mo=JK_MON[m[2].toLowerCase()];if(!mo)continue;
+    const t=[p.imsak,p.fajr,p.syuruk,p.dhuhr,p.asr,p.maghrib,p.isha].map(jkMin);
+    if(t.some(x=>!(x>=0))||t.some((x,i)=>i>0&&x<=t[i-1]))continue;
+    days[m[3]+"-"+("0"+mo).slice(-2)+"-"+("0"+m[1]).slice(-2)]=t}
+  if(!Object.keys(days).length)throw new Error("no usable days");return days}
+/*</jakim-pure>*/
+if(st.loc&&!st.loc.zone){const p=String(st.loc.name||"").split(", ");st.loc.zone=(st.loc.city&&zoneByName(st.loc.city,""))||(p.length>1&&zoneByName(p[0],zState(p[1])))||null}
 let locationRequest=0;
 async function fetchJSON(url){
   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),7000);
   try{const r=await fetch(url,{signal:controller.signal});if(!r.ok)throw new Error("Network");return await r.json()}finally{clearTimeout(timer)}
 }
 function validCoordinates(lat,lng){return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180}
-async function setPlace(lat,lng,name,source,request){
+async function setPlace(lat,lng,name,source,request,zone){
   if(request!==locationRequest||!validCoordinates(lat,lng))return false;
-  const place={name:name||`${lat.toFixed(3)}, ${lng.toFixed(3)}`,lat,lng,city:null,source};
+  const place={name:name||`${lat.toFixed(3)}, ${lng.toFixed(3)}`,lat,lng,city:null,source,zone:zone||null};
   st.loc=place;citySel.value="__gps";render(true);
-  if(!name){try{const j=await fetchJSON(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=12&accept-language=ms&lat=${r2(lat).toFixed(2)}&lon=${r2(lng).toFixed(2)}`);
-    const a=j.address||{};const nm=pickName(a);
-    if(nm)place.name=nm+(a.state&&a.state!==nm?", "+a.state:"")}catch{}}
+  if(!name||(!place.zone&&inMY(place))){try{const j=await fetchJSON(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=12&accept-language=ms&lat=${r2(lat).toFixed(2)}&lon=${r2(lng).toFixed(2)}`);
+    const a=j.address||{};if(!name){const nm=pickName(a);if(nm)place.name=nm+(a.state&&a.state!==nm?", "+a.state:"")}
+    if(!place.zone)place.zone=zoneFromAddress(a)}catch{}}
   if(request!==locationRequest)return false;
   st.loc=place;SS("loc",place);render(true);return true;
 }
@@ -294,7 +321,7 @@ async function findTown(q,state){
     const j=await fetchJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&accept-language=ms&countrycodes=${state?"my":"my,sg,bn,id"}&q=${encodeURIComponent(query)}`);
     if(request!==locationRequest)return;
     if(j[0]){const a=j[0].address||{};const nm=goodName(a.town)||goodName(a.city)||goodName(a.village)||goodName(a.suburb)||goodName(a.county)||q;
-      if(await setPlace(+j[0].lat,+j[0].lon,nm+(a.state&&a.state!==nm?", "+a.state:""),"manual",request)){notice("");return}}
+      if(await setPlace(+j[0].lat,+j[0].lon,nm+(a.state&&a.state!==nm?", "+a.state:""),"manual",request,(state&&zoneByName(q,zState(state)))||zoneFromAddress(a))){notice("");return}}
   }catch{}
   if(request!==locationRequest)return;
   notice("Tempat tidak dijumpai. Semak internet atau cuba nama lain.","Cari",searchTown);$("loc-name").textContent=st.loc.name;citySel.value=st.loc.city||"__gps";
@@ -337,27 +364,34 @@ $("btn-refresh").onclick=locate;$("btn-gps").onclick=locate;
 
 /* ---------- Render ---------- */
 let today=null,tomorrow=null,dayKey="";
-/* ---------- Official JAKIM e-Solat timetable (via api.waktusolat.app mirror) ---------- */
-const API="https://api.waktusolat.app",OK={imsak:"imsak",subuh:"fajr",syuruk:"syuruk",zohor:"dhuhr",asar:"asr",maghrib:"maghrib",isyak:"isha"};
-const official={},pending={};let zone=null;
+/* ---------- JAKIM e-Solat timetable, read directly from www.e-solat.gov.my (no third party) ---------- */
+const JAKIM="https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&zone=";
+let zone=null,jkYear=true;const jk={};
 function inMY(l){return l.lat>0.8&&l.lat<7.5&&l.lng>99.5&&l.lng<119.5}
-async function getJSON(u){const r=await fetch(u);if(!r.ok)throw 0;return r.json()}
-function needZone(){const l=st.loc,key=l.lat.toFixed(3)+","+l.lng.toFixed(3);
-  if(st.method!=="JAKIM"||!inMY(l)){zone=null;return}
-  const c=LS("zone");if(c&&c.key===key){zone=c.zone;return}
-  zone=null;if(pending[key])return;pending[key]=1;
-  getJSON(API+"/zones/"+r2(l.lat)+"/"+r2(l.lng)).then(j=>{if(j&&j.zone){SS("zone",{key,zone:j.zone});render(true)}}).catch(()=>{});}
-function offFor(d){if(!zone)return null;const k=zone+"|"+d.getFullYear()+"|"+(d.getMonth()+1);
-  let data=official[k]||LS("jakim."+k);
-  if(!data){if(!pending[k]){pending[k]=1;getJSON(API+"/v2/solat/"+zone+"?year="+d.getFullYear()+"&month="+(d.getMonth()+1))
-      .then(j=>{if(j&&j.prayers&&j.prayers.length){SS("jakim."+k,j.prayers);official[k]=j.prayers;render(true)}}).catch(()=>{})}return null}
-  official[k]=data;const p=data.find(x=>x.day===d.getDate());if(!p)return null;
-  const r={};for(const a in OK)r[a]=new Date(p[OK[a]]*1000);return r}
+const dkey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+function jkEntry(z){if(!jk[z]){const c=LS("jk."+z)||{};jk[z]={t:c.t||0,days:c.days||{},busy:false,tried:0}}return jk[z]}
+async function jkGet(z,period){const c=new AbortController(),tm=setTimeout(()=>c.abort(),12000);
+  try{const r=await fetch(JAKIM+z+"&period="+period,{signal:c.signal,credentials:"omit"});if(!r.ok)throw new Error("HTTP "+r.status);return jkParse(await r.json(),z)}finally{clearTimeout(tm)}}
+/* whole year first (one request); if JAKIM refuses that, the current month */
+async function jkFetch(z){const e=jkEntry(z);if(e.busy||Date.now()-e.tried<10*60000)return;e.busy=true;e.tried=Date.now();
+  try{let days;if(jkYear){try{days=await jkGet(z,"year")}catch{jkYear=false}}if(!days)days=await jkGet(z,"month");
+    const keep=dkey(new Date(Date.now()-45*864e5)),merged={};
+    for(const k of Object.keys(e.days).concat(Object.keys(days)).sort())if(k>=keep)merged[k]=days[k]||e.days[k];
+    e.days=merged;e.t=Date.now();SS("jk."+z,{t:e.t,days:merged});render(true)}
+  catch{}finally{e.busy=false}}
+function jkEnsure(){const l=st.loc;zone=null;if(st.method!=="JAKIM"||!inMY(l)||!l.zone)return;zone=l.zone;
+  const e=jkEntry(zone),n=new Date(),t=new Date(n);t.setDate(t.getDate()+1);
+  if(!e.days[dkey(n)]||!e.days[dkey(t)]||Date.now()-e.t>7*864e5)jkFetch(zone)}
+/* JAKIM times are Malaysia time (UTC+8); a day is used only if every time is within 20 min of our own calculation (guards against wrong or garbled data) */
+function offFor(d){if(!zone)return null;const day=jkEntry(zone).days[dkey(d)];if(!day)return null;
+  const at=min=>new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())+(min-480)*60000);
+  const r={imsak:at(day[0]),subuh:at(day[1]),syuruk:at(day[2]),zohor:at(day[3]),asar:at(day[4]),maghrib:at(day[5]),isyak:at(day[6])};
+  const c=calc(d,st.loc.lat,st.loc.lng,st.method);for(const k in r)if(!(Math.abs(r[k]-c[k])<=20*60000))return null;return r}
 function timesFor(d){return offFor(d)||calc(d,st.loc.lat,st.loc.lng,st.method)}
-function compute(){const n=new Date();needZone();dayKey=n.toDateString()+st.method+st.loc.lat+st.loc.lng;
+function compute(){const n=new Date();jkEnsure();dayKey=n.toDateString()+st.method+st.loc.lat+st.loc.lng;
   const isOff=!!offFor(n);today=timesFor(n);const t=new Date(n);t.setDate(t.getDate()+1);tomorrow=timesFor(t);
   const y=new Date(n);y.setDate(y.getDate()-1);today._yIsyak=timesFor(y).isyak;
-  const f=document.getElementById("src");if(f)f.textContent=isOff?"Waktu Solat · Jadual rasmi JAKIM e-Solat · Zon "+zone:"Waktu Solat · Kiraan pada peranti (anggaran ±1 minit)";}
+  const f=document.getElementById("src");if(f)f.textContent="Waktu Solat · "+(isOff?"Jadual JAKIM e-Solat · Zon "+zone:(st.method==="JAKIM"&&inMY(st.loc)&&!st.loc.zone?"Kiraan pada peranti (±1 minit) · pilih daerah untuk jadual JAKIM":"Kiraan pada peranti (anggaran ±1 minit)"));}
 
 function render(force){
   const now=new Date();
