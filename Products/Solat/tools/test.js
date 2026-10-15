@@ -8,6 +8,9 @@ const origArg = process.argv[2] && fs.existsSync(process.argv[2]) ? path.resolve
 const shotDir = process.argv[3] || null;
 let bad = 0, total = 0; const MIRROR_HITS = []; let jakimMode = 'ok';
 const check = (name, ok, detail) => { total++; if (!ok) bad++; console.log((ok ? '  ok    ' : '  FAIL  ') + name + (ok ? '' : '   -> ' + detail)); };
+// The header icons now live in a menu: open it first when the icon is hidden.
+const ui = async (page, sel) => { if (!(await page.locator(sel).isVisible())) await page.click('#btn-menu'); await page.click(sel); };
+const qib = (lat, lng) => { const r = Math.PI / 180, k = 21.4225 * r, g = 39.8262 * r, p = lat * r, dl = g - lng * r; return (Math.atan2(Math.sin(dl), Math.cos(p) * Math.tan(k) - Math.sin(p) * Math.cos(dl)) * 180 / Math.PI + 360) % 360; };
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
 const NOW = '2026-10-12T05:10:00Z';   // 13:10 in Malaysia
 const MON = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
@@ -49,6 +52,7 @@ function jakimBody(url, mode) {
       }
       net.other.push(u); return r.abort();
     });
+    if (o.iosPerm) await ctx.addInitScript(p => { if (window.DeviceOrientationEvent) DeviceOrientationEvent.requestPermission = () => Promise.resolve(p); }, o.iosPerm);
     if (o.geoPlan) await ctx.addInitScript(plan => { window.__calls = []; const seq = plan.slice(); navigator.geolocation.getCurrentPosition = (ok, err, opts) => { window.__calls.push(opts); const st = seq.shift() || { err: 2 }; setTimeout(() => st.ok ? ok({ coords: { latitude: st.ok[0], longitude: st.ok[1] } }) : err({ code: st.err }), 0); }; }, o.geoPlan);
     const page = await ctx.newPage();
     page.on('pageerror', e => problems.push('pageerror: ' + e.message));
@@ -149,7 +153,7 @@ function jakimBody(url, mode) {
     check("list shows JAKIM's times, not the calculation (" + REAL_LIST.join(' ') + ')', (await times()).join() === REAL_LIST.join(), (await times()).join() + ' vs calc ' + CALC_LIST.join());
     check('requests go only to e-solat.gov.my for the timetable: zone code + period, nothing about the user', r.net.jakim.every(u => /^zone=(WLY01|SGR01)&period=(year|month)$/.test(u)) && r.net.jakim.includes('zone=SGR01&period=year'), r.net.jakim.join(' '));
     check('Zohor started 13:03 (JAKIM)', (await r.t('hero-start')) === '13:03', await r.t('hero-start'));
-    await r.page.click('#btn-settings');
+    await ui(r.page, '#btn-settings');
     check('Settings has the section "Zon JAKIM" showing the current zone and its districts', /^Zon dikenal pasti: SGR01 — Gombak, Petaling, Sepang, Hulu Langat, Hulu Selangor, Shah Alam$/.test((await r.t('zone-now')).trim()) && (await r.page.locator('#settings h3', { hasText: 'Zon JAKIM' }).count()) === 1, await r.t('zone-now'));
     await r.page.click('#settings summary');
     const help = await r.page.locator('#settings details.help').innerText();
@@ -173,7 +177,7 @@ function jakimBody(url, mode) {
     jakimMode = 'ok';
 
     r = await open(fixedFile, { grant: true, address: { county: 'Kajang', state: 'Selangor' }, wait: 1200 });
-    await r.page.click('#btn-settings');
+    await ui(r.page, '#btn-settings');
     check('Settings says the zone is not identified yet when no zone matched', /belum ada\. Pilih daerah anda/.test(await r.t('zone-now')), await r.t('zone-now'));
     await r.page.click('#settings-close');
     check('district not in JAKIM list -> NO guess: no request for any zone but the default place WLY01, footer asks to pick a district', r.net.jakim.every(u => u.startsWith('zone=WLY01')) && /pilih daerah untuk jadual JAKIM/.test(await r.t('src')), r.net.jakim.join(' ') + ' | ' + await r.t('src'));
@@ -210,14 +214,111 @@ function jakimBody(url, mode) {
     await r.ctx.close();
     check('api.waktusolat.app was never contacted in any scenario above', MIRROR_HITS.length === 0, MIRROR_HITS.join(' ')); }
 
+  console.log('M. Three-bar menu: the three icons open in a column');
+  { const r = await open(fixedFile, { grant: true, geoPlan: [{ ok: [3.1, 101.8] }, { ok: [3.1, 101.8] }], address: { suburb: 'Bangi Lama', state: 'Selangor' }, wait: 1000 });
+    const vis = sel => r.page.locator(sel).isVisible();
+    check('header shows ONE button (three bars); compass, bell and refresh are hidden', (await vis('#btn-menu')) && !(await vis('#btn-qibla')) && !(await vis('#btn-settings')) && !(await vis('#btn-refresh')));
+    const dh = (await r.page.locator('#date-main').boundingBox()).height;
+    check('the date fits on one line again (it wrapped when three icons sat in the header)', dh < 32, 'height ' + dh);
+    if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'menu-closed.png') });
+    await r.page.click('#btn-menu');
+    const bx = await Promise.all(['#btn-qibla', '#btn-settings', '#btn-refresh'].map(x => r.page.locator(x).boundingBox()));
+    check('opens the 3 icons in a column: same left edge, stacked top to bottom (compass, bell, refresh)', bx.every(b => b && Math.abs(b.x - bx[0].x) < 1) && bx[0].y < bx[1].y && bx[1].y < bx[2].y, JSON.stringify(bx.map(b => b && [Math.round(b.x), Math.round(b.y)])));
+    check('the column stays inside the screen (390 px wide)', bx.every(b => b.x >= 0 && b.x + b.width <= 390), JSON.stringify(bx.map(b => Math.round(b.x + b.width))));
+    check('aria-expanded is "true" while open', (await r.page.getAttribute('#btn-menu', 'aria-expanded')) === 'true');
+    if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'menu-open.png') });
+    await r.page.click('#hero-name'); check('tapping elsewhere closes it', !(await vis('#btn-settings')) && (await r.page.getAttribute('#btn-menu', 'aria-expanded')) === 'false');
+    await r.page.click('#btn-menu'); await r.page.keyboard.press('Escape'); check('Escape closes it', !(await vis('#btn-settings')));
+    await r.page.click('#btn-menu'); await r.page.click('#btn-settings');
+    check('bell opens Settings and the menu closes', (await r.page.locator('#settings').evaluate(d => d.open)) && !(await vis('#btn-qibla')));
+    await r.page.click('#settings-close');
+    const before = await r.page.evaluate(() => window.__calls.length);
+    await ui(r.page, '#btn-refresh'); await r.page.waitForTimeout(500);
+    check('refresh asks the phone for its location again', (await r.page.evaluate(() => window.__calls.length)) === before + 1, before + ' -> ' + (await r.page.evaluate(() => window.__calls.length)));
+    await ui(r.page, '#btn-qibla'); check('compass icon opens the Arah Kiblat panel and the menu closes', (await r.page.locator('#qibla').evaluate(d => d.open)) && !(await vis('#btn-settings')));
+    await r.ctx.close(); }
+
+  console.log('Q. Qibla compass (live when the sensor answers, fixed dial otherwise)');
+  { const BEAR = qib(3.1, 101.8), fire = (page, alpha) => page.evaluate(a => window.dispatchEvent(new DeviceOrientationEvent('deviceorientationabsolute', { alpha: a, beta: 0, gamma: 0, absolute: true })), alpha);
+    const dialDeg = async page => parseFloat(/rotate\((-?[\d.]+)/.exec(await page.getAttribute('#q-dial', 'transform'))[1]);
+    // a) no sensor events at all
+    let r = await open(fixedFile, { grant: true, geoPlan: [{ ok: [3.1, 101.8] }], address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1200 });
+    await ui(r.page, '#btn-qibla');
+    check('while searching: neutral badge "Mencari sensor…", phone marker hidden', (await r.t('q-mode')) === 'Mencari sensor…' && (await r.page.locator('#qibla').evaluate(d => d.classList.contains('mode-wait'))), await r.t('q-mode'));
+    check('shows the bearing for this place: ' + BEAR.toFixed(1) + '° and "Barat–Barat Laut"', (await r.t('q-deg')) === BEAR.toFixed(1) + '°' && (await r.t('q-dir')) === 'Barat–Barat Laut', await r.t('q-deg') + ' ' + await r.t('q-dir'));
+    check('says it was worked out from the user\'s place', /Dikira dari lokasi anda: Hulu Langat, Selangor/.test(await r.t('q-place')), await r.t('q-place'));
+    check('the Kaaba arrow sits at the bearing on the dial', Math.abs(parseFloat(/rotate\(([\d.]+)/.exec(await r.page.getAttribute('#q-arrow', 'transform'))[1]) - BEAR) < 0.05);
+    await r.page.waitForTimeout(3000);
+    const look = () => r.page.evaluate(() => ({ cls: [...document.querySelector('#qibla').classList].filter(c => c.startsWith('mode-')).join(), badge: document.getElementById('q-mode').textContent, top: getComputedStyle(document.querySelector('.q-top')).display, dash: getComputedStyle(document.querySelector('.q-ring')).strokeDasharray, dot: getComputedStyle(document.getElementById('q-mode'), '::before').animationName }));
+    const st0 = await look();
+    check('FIXED mode is unmistakable: badge "Tetap · tiada sensor kompas", dashed ring, phone marker hidden, no pulsing dot', st0.cls === 'mode-static' && st0.badge === 'Tetap · tiada sensor kompas' && st0.top === 'none' && st0.dash !== 'none' && st0.dot === 'none', JSON.stringify(st0));
+    check('FIXED mode says the dial does not move', /tetap dan tidak bergerak \(utara di atas\)/.test(await r.t('q-status')), await r.t('q-status'));
+    check('no sensor answered -> letters are not turned (no transform)', (await r.page.locator('#q-dial text').evaluateAll(ts => ts.every(t => !t.hasAttribute('transform')))));
+    check('no sensor answered -> fixed dial (north up) + clear instruction with the bearing', /Sensor kompas tidak tersedia/.test(await r.t('q-status')) && (await r.t('q-status')).includes(BEAR.toFixed(1) + '°') && (await dialDeg(r.page)) === 0, await r.t('q-status'));
+    if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'qibla-static.png') });
+    await r.ctx.close();
+
+    // b) Android-style absolute readings
+    r = await open(fixedFile, { grant: true, geoPlan: [{ ok: [3.1, 101.8] }], address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1200 });
+    await ui(r.page, '#btn-qibla');
+    for (let i = 0; i < 40; i++) await fire(r.page, 315);            // phone top points to 45 degrees (north-east)
+    await r.page.waitForTimeout(300);
+    const lv = await r.page.evaluate(() => ({ cls: [...document.querySelector('#qibla').classList].filter(c => c.startsWith('mode-')).join(), badge: document.getElementById('q-mode').textContent, top: getComputedStyle(document.querySelector('.q-top')).display, dash: getComputedStyle(document.querySelector('.q-ring')).strokeDasharray, dot: getComputedStyle(document.getElementById('q-mode'), '::before').animationName }));
+    check('LIVE mode is unmistakable: badge "Langsung · ikut gerakan telefon", solid ring, phone marker shown, pulsing dot', lv.cls === 'mode-live' && lv.badge === 'Langsung · ikut gerakan telefon' && lv.top !== 'none' && lv.dash === 'none' && lv.dot === 'qpulse', JSON.stringify(lv));
+    check('live: phone pointing at 45° -> dial turns the opposite way (-45°)', Math.abs((await dialDeg(r.page)) + 45) < 1.5 && (await r.t('q-head')) === 'Arah telefon: 45°', (await dialDeg(r.page)) + ' | ' + await r.t('q-head'));
+    check('live: tells you which way to turn (Qibla is about 112° to the left of 45°)', /^Putar ke kiri 11[23]°$/.test((await r.t('q-status')).trim()), await r.t('q-status'));
+    const lt = await r.page.locator('#q-dial text').evaluateAll(ts => ts.map(t => t.getAttribute('transform')));
+    check('the letters U T S B are turned back so they stay upright (rotate +45° while the dial turns -45°)', lt.length === 4 && lt.every(x => /^rotate\(45\.0 /.test(x)), JSON.stringify(lt));
+    if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'qibla-live.png') });
+    for (let i = 0; i < 80; i++) await fire(r.page, 360 - BEAR);     // now facing the Qibla
+    await r.page.waitForTimeout(300);
+    check('live: facing the Qibla -> "Menghadap kiblat ✓" and the dial turns green', (await r.t('q-status')).trim() === 'Menghadap kiblat ✓' && (await r.page.locator('#qibla').evaluate(d => d.classList.contains('aligned'))), await r.t('q-status'));
+    if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'qibla-aligned.png') });
+    await r.page.waitForTimeout(3000);
+    check('live mode is not replaced by the "no sensor" message after the timer', !/tidak tersedia/.test(await r.t('q-status')), await r.t('q-status'));
+    const frozen = await dialDeg(r.page);
+    await r.page.click('#q-close');
+    for (let i = 0; i < 20; i++) await fire(r.page, 0);
+    await r.page.waitForTimeout(100);
+    check('closing the panel stops listening to the sensor (dial unchanged by later readings)', Math.abs((await dialDeg(r.page)) - frozen) < 0.01, frozen + ' -> ' + await dialDeg(r.page));
+    await r.ctx.close();
+
+    // b2) a slow sensor answers AFTER the fixed fallback was shown: it must switch to live
+    r = await open(fixedFile, { grant: true, geoPlan: [{ ok: [3.1, 101.8] }], address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1200 });
+    await ui(r.page, '#btn-qibla'); await r.page.waitForTimeout(3000);
+    const was = await r.t('q-mode');
+    for (let i = 0; i < 30; i++) await fire(r.page, 315); await r.page.waitForTimeout(300);
+    check('fixed -> live when a late sensor reading arrives (' + was + ' -> ' + await r.t('q-mode') + ')', was === 'Tetap · tiada sensor kompas' && (await r.t('q-mode')) === 'Langsung · ikut gerakan telefon', await r.t('q-mode'));
+    await r.ctx.close();
+
+    // c) Chrome on Android also fires relative events: they are not a compass
+    r = await open(fixedFile, { grant: true, geoPlan: [{ ok: [3.1, 101.8] }], address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1200 });
+    await ui(r.page, '#btn-qibla');
+    for (let i = 0; i < 10; i++) await r.page.evaluate(() => window.dispatchEvent(new DeviceOrientationEvent('deviceorientation', { alpha: 120, beta: 0, gamma: 0, absolute: false })));
+    await r.page.waitForTimeout(3000);
+    check('relative (non-compass) readings are ignored -> falls back to the fixed dial', /Sensor kompas tidak tersedia/.test(await r.t('q-status')) && (await dialDeg(r.page)) === 0, await r.t('q-status'));
+    await r.ctx.close();
+
+    // d) iPhone-style: permission button, webkitCompassHeading
+    for (const [perm, ok] of [['granted', true], ['denied', false]]) {
+      r = await open(fixedFile, { grant: true, iosPerm: perm, geoPlan: [{ ok: [3.1, 101.8] }], address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1200 });
+      await ui(r.page, '#btn-qibla');
+      check('iPhone-style (' + perm + '): a "Benarkan sensor" button is offered first, badge says it is waiting for permission', (await r.page.locator('#q-perm').isVisible()) && /Benarkan sensor/.test(await r.t('q-perm')) && /Sentuh/.test(await r.t('q-status')) && (await r.t('q-mode')) === 'Menunggu kebenaran sensor', await r.t('q-status') + ' | ' + await r.t('q-mode'));
+      await r.page.click('#q-perm'); await r.page.waitForTimeout(200);
+      if (ok) { for (let i = 0; i < 40; i++) await r.page.evaluate(() => { const ev = new Event('deviceorientation'); ev.webkitCompassHeading = 100; window.dispatchEvent(ev); }); await r.page.waitForTimeout(300);
+        check('iPhone-style granted: heading 100° read from webkitCompassHeading, badge LIVE', (await r.t('q-head')) === 'Arah telefon: 100°' && (await r.t('q-mode')) === 'Langsung · ikut gerakan telefon' && !(await r.page.locator('#q-perm').isVisible()), await r.t('q-head') + ' | ' + await r.t('q-mode')); }
+      else check('iPhone-style denied: FIXED badge, instruction, button hidden', (await r.t('q-mode')) === 'Tetap · tiada sensor kompas' && /Sensor kompas tidak tersedia/.test(await r.t('q-status')) && !(await r.page.locator('#q-perm').isVisible()), await r.t('q-status'));
+      await r.ctx.close(); }
+  }
+
   if (origArg) {
     console.log('G. Looks identical to your v7 (pixel comparison, same time, same place, no notice)');
     const addr = { county: 'Hulu Langat', state: 'Selangor' }, shots = {};
     const doms = {};
-    for (const [k, url] of [['v7', 'file://' + origArg], ['v7b', 'file://' + origArg], ['fixed', fixedFile]]) { jakimMode = 'abort'; const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); jakimMode = 'ok'; doms[k] = await r.page.evaluate(() => document.querySelector('main').outerHTML); await r.page.evaluate(() => { const b = document.getElementById('brand'); if (b) b.style.display = 'none'; }); shots[k] = await r.page.screenshot({ fullPage: true }); await r.ctx.close(); }
+    for (const [k, url] of [['v7', 'file://' + origArg], ['v7b', 'file://' + origArg], ['fixed', fixedFile]]) { jakimMode = 'abort'; const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); jakimMode = 'ok'; doms[k] = await r.page.evaluate(() => { const c = document.querySelector('main').cloneNode(true); const a = c.querySelector('.actions'); if (a) a.remove(); return c.outerHTML; }); await r.page.evaluate(() => { const b = document.getElementById('brand'); if (b) b.style.display = 'none'; const a = document.querySelector('.actions'); if (a) a.style.visibility = 'hidden'; }); shots[k] = await r.page.screenshot({ fullPage: true }); await r.ctx.close(); }
     const styleOf = f => (/<style>([\s\S]*?)<\/style>/.exec(fs.readFileSync(f, 'utf8')) || [])[1];
-    check('stylesheet is the same as your v7 plus only the footnote spacing, hidden-diagnostic and help-text rules', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', '').replace(/\n#dbg\{[^}]*\}/, '').replace(/\ndetails\.help [^{]*\{[^}]*\}/g, ''), 'differs');
-    check('page content (<main> markup) is identical to your v7 plus only the footnote and the hidden diagnostic element', doms.v7 === doms.fixed.replace(/\s*<footer id="brand">[^<]*<\/footer>/, '').replace(/\s*<pre id="dbg"[^>]*><\/pre>/, ''), 'differs');
+    check('stylesheet is the same as your v7 plus only the added rules (footnote, diagnostic, help text, menu, compass)', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', '').replace(/\n#dbg\{[^}]*\}/, '').replace(/\ndetails\.help [^{]*\{[^}]*\}/g, '').replace(/\n\/\*menu\*\/[\s\S]*?\/\*\/menu\*\//, ''), 'differs');
+    check('page content (<main> markup, header icons aside) is identical to your v7 plus only the footnote and the hidden diagnostic element', doms.v7 === doms.fixed.replace(/\s*<footer id="brand">[^<]*<\/footer>/, '').replace(/\s*<pre id="dbg"[^>]*><\/pre>/, ''), 'differs');
     const p = await browser.newPage();
     const cmp = async (x, y) => p.evaluate(async ([a, b]) => { const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = 'data:image/png;base64,' + s; }); const [u, v] = await Promise.all([load(a), load(b)]); if (u.width !== v.width || u.height !== v.height) return { size: false }; const g = i => { const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const t = c.getContext('2d'); t.drawImage(i, 0, 0); return t.getImageData(0, 0, i.width, i.height).data; }; const d1 = g(u), d2 = g(v); let n = 0, max = 0, big = 0; for (let k = 0; k < d1.length; k += 4) { const d = Math.max(Math.abs(d1[k] - d2[k]), Math.abs(d1[k + 1] - d2[k + 1]), Math.abs(d1[k + 2] - d2[k + 2])); if (d) { n++; max = Math.max(max, d); if (d > 4) big++; } } return { size: true, differing: n, maxDelta: max, over4: big }; }, [x.toString('base64'), y.toString('base64')]);
     const control = await cmp(shots.v7, shots.v7b), real = await cmp(shots.v7, shots.fixed); await p.close();
