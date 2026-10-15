@@ -20,3 +20,12 @@ for (const f of ['firebase.json', 'DEPLOY.md']) fs.copyFileSync(path.join(root, 
 console.log('wrote ' + fb + ': ' + fs.readdirSync(fb).join(', '));
 try { fs.rmSync(path.join(root, 'dist', 'Solat-firebase.zip'), { force: true }); cp.execFileSync('zip', ['-qr', path.join(root, 'dist', 'Solat-firebase.zip'), '.'], { cwd: fb }); console.log('wrote dist/Solat-firebase.zip'); }
 catch (e) { try { cp.execFileSync('python3', ['-c', "import shutil,sys;shutil.make_archive(sys.argv[1],'zip',sys.argv[2])", path.join(root, 'dist', 'Solat-firebase'), fb]); console.log('wrote dist/Solat-firebase.zip'); } catch (e2) { console.log('firebase zip not created: ' + e2.message); } }
+
+// Cloudflare Pages package (Direct Upload): dist/cloudflare/ = the host files + _headers, and dist/Solat-cloudflare.zip (files at the zip root)
+const cf = path.join(root, 'dist', 'cloudflare');
+fs.rmSync(cf, { recursive: true, force: true });
+fs.cpSync(out, cf, { recursive: true });
+fs.copyFileSync(path.join(root, 'cloudflare', '_headers'), path.join(cf, '_headers'));
+console.log('wrote ' + cf + ': ' + fs.readdirSync(cf).join(', '));
+try { fs.rmSync(path.join(root, 'dist', 'Solat-cloudflare.zip'), { force: true }); cp.execFileSync('zip', ['-qr', path.join(root, 'dist', 'Solat-cloudflare.zip'), '.'], { cwd: cf }); console.log('wrote dist/Solat-cloudflare.zip'); }
+catch (e) { try { cp.execFileSync('python3', ['-c', "import shutil,sys;shutil.make_archive(sys.argv[1],'zip',sys.argv[2])", path.join(root, 'dist', 'Solat-cloudflare'), cf]); console.log('wrote dist/Solat-cloudflare.zip'); } catch (e2) { console.log('cloudflare zip not created: ' + e2.message); } }

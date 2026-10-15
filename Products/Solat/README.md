@@ -78,3 +78,7 @@ Text on both pages is 50% larger (body 15 px to 22.5 px, small text 13 px to 19.
 - "Benarkan sensor" is now the gold primary button and sits directly under the Langsung/Tetap badge (before, it was dark on dark and below the long text, off screen on a phone). It only appears when the browser offers a sensor-permission prompt (iPhone Safari style).
 - Settings has a new "Keselamatan" section and one added sentence under Privasi. The statement "tiada spyware atau malware ditemui" rests on a reading and search of this file by the developer (hosts it contacts, no third-party script/font/image/iframe, no eval, no beacon); it is not an independent antivirus or security audit. The outgoing hosts listed in the app are exactly the ones found in the code: e-solat.gov.my, nominatim.openstreetmap.org, islamcan.com, and ipwho.is / ipapi.co / get.geojs.io (only on "Guna anggaran").
 - Cache name is solat-v7. Patch: tools/apply-icons-sensor-privacy.py.
+
+## Cloudflare Pages package (15.Oct.2026)
+
+`node tools/make-host.js` now also writes `dist/Solat-cloudflare.zip` (host files + `_headers`, files at the zip root). Steps are in DEPLOY-CLOUDFLARE.md; the security checklist for all Digitiska apps is SECURITY.md. The app itself is unchanged (still solat-v7). Not yet verified: the live Cloudflare dashboard steps, the custom domain, and that Cloudflare serves the page byte for byte as uploaded (check with the hash comparison).
