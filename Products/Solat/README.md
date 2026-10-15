@@ -82,3 +82,7 @@ Text on both pages is 50% larger (body 15 px to 22.5 px, small text 13 px to 19.
 ## Cloudflare Pages package (15.Oct.2026)
 
 `node tools/make-host.js` now also writes `dist/Solat-cloudflare.zip` (host files + `_headers`, files at the zip root). Steps are in DEPLOY-CLOUDFLARE.md; the security checklist for all Digitiska apps is SECURITY.md. The app itself is unchanged (still solat-v7). Not yet verified: the live Cloudflare dashboard steps, the custom domain, and that Cloudflare serves the page byte for byte as uploaded (check with the hash comparison).
+
+## Live on Cloudflare Pages (16.Oct.2026)
+
+Solat is deployed with Pages Direct Upload (project `solat`, test address solat-8ij.pages.dev) and served at https://solat.digitiska.com. Checked from the owner's computer: the served page hash equals the v7 file (1a427292d4a488d472afdecbe568d364670eda9e2e98163acd0fffa943adf823), `sw.js` is served as JavaScript with `cache-control: no-cache` and `x-content-type-options: nosniff`. First run found the digitiska.com zone replacing `no-cache` with `max-age=14400`; fixed by setting Browser Cache TTL to Respect Existing Headers (see DEPLOY-CLOUDFLARE.md step 2b). Not yet tested on real phones: install from the new address, compass behaviour on the Samsung A54 and the Huawei MatePad. The Firebase site stays online until users have moved.

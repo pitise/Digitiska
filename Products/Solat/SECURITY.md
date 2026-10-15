@@ -8,10 +8,15 @@ What this protects against: someone taking over the account that publishes the a
 3. If Firebase is still in use: its Google account has 2-step verification, and only you are listed under Project settings, Users and permissions.
 4. Log out of hosting tools on computers you do not fully control.
 
+## Hosting settings that must stay as they are (Cloudflare, digitiska.com)
+- Browser Cache TTL: Respect Existing Headers (otherwise updates are delayed by hours).
+- Web Analytics and any setting that rewrites HTML or injects scripts: off.
+- The hash check below catches a changed page; the header check catches a changed cache setting.
+
 ## Every release
 1. Run the browser tests (tools/test.js) and check the list of outside addresses in Settings, Keselamatan still matches the code.
 2. Deploy.
-3. Compare the live file with your copy: `curl -s https://solat.digitiska.com/ | sha256sum` against `sha256sum index.html`.
+3. Compare the live file with your copy: `curl -s https://solat.digitiska.com/ | sha256sum` against `sha256sum index.html`, and check `curl -sI https://solat.digitiska.com/sw.js | grep -i cache-control` says `no-cache`.
 4. Keep a copy of each released zip (and the git history) so a clean version can be redeployed.
 
 ## App code rules
