@@ -15,17 +15,17 @@ Found on a real phone: at "Bangi Lama, Selangor" the footer said "Kiraan pada pe
 Hidden diagnostic: tap the "© 2026 Digitiska" line 5 times to show the rounded position (about 1 km), the zone, and what the place service answered; 5 more taps hide it. If a place still gets no zone, choose its district in the Lokasi list.
 
 ## Menu and Qibla compass (15.Oct.2026)
-- The header has one three-bar button. Tapping it opens the three icons in a column: compass (Arah Kiblat), bell (azan settings) and refresh (location). It closes when you tap an icon, tap elsewhere, or press Escape. This also stops the date wrapping onto two lines.
+- The header has one three-bar button. Tapping it opens the three icons in a column: compass (Arah Kiblat), gear (Settings: azan, Zon JAKIM, privacy) and refresh (location). It closes when you tap an icon, tap elsewhere, or press Escape. This also stops the date wrapping onto two lines.
 - **Arah Kiblat** is a live compass with a fixed fallback, and the screen always says which one you are looking at:
   - **Langsung** (green pulsing dot, solid ring, gold phone marker at the top, "Arah telefon: N°"): the dial turns with the phone; the arrow turns green and it says "Menghadap kiblat ✓" within 3 degrees of the Qibla.
   - **Tetap** (hollow gold dot, dashed ring, no phone marker): no compass sensor answered within 2.5 s, so the dial stays still with north up, with the bearing number and instructions for using a compass app. If a sensor answers later, it switches to Langsung.
   - **Mencari sensor…** while it looks; on iPhone-style browsers "Menunggu kebenaran sensor" until the button is tapped.
 - Bearing: great-circle bearing from your place to the Kaaba (21.4225 N, 39.8262 E). Checked against widely quoted values (London about 119, New York about 58.5, Sydney about 277.5). For Selangor it gives about 292.5 degrees; JAKIM publishes 291 deg 7 min for zone SGR01, about 1.4 degrees less.
 - **Not verified on a real phone**: the live compass was tested only with simulated sensor events. Unknown: whether the Galaxy A54 and the MatePad have a compass sensor, and how accurate they are. Android Chrome gives a compass reading only on a secure (https) page, so a file opened from storage will usually show the fixed mode. The reading assumes the phone is held flat and the screen is not rotated. Android readings are relative to magnetic north; I believe the difference from true north is small in Malaysia but have not verified it. iPhone support (permission button, webkitCompassHeading) is written but untested.
-- The bell's "azan off" slash is now inside the menu, so it is not visible until the menu is opened.
+- The gear icon no longer shows an "azan off" slash (the Settings page covers more than azan now). Whether azan is on or off is only visible inside Settings.
 
 ## Zon JAKIM explanation (15.Oct.2026)
-Settings (bell icon) has a section "Zon JAKIM": a live line with the identified zone and its districts, and an expandable "Bagaimana pengumpulan zon berfungsi?" (Bahasa Malaysia) explaining that JAKIM publishes one timetable per zone, what the two footer messages mean, why calculated times can differ by 1-2 minutes, and that the zone list is from a 2020 community guide, not an official JAKIM list.
+Settings (gear icon) has a section "Zon JAKIM": a live line with the identified zone and its districts, and an expandable "Bagaimana pengumpulan zon berfungsi?" (Bahasa Malaysia) explaining that JAKIM publishes one timetable per zone, what the two footer messages mean, why calculated times can differ by 1-2 minutes, and that the zone list is from a 2020 community guide, not an official JAKIM list.
 
 ## Name and footnote (updated 12.Oct.2026)
 - Home-screen / bookmark name is **Solat Times** (manifest `name` and `short_name`, page title, `apple-mobile-web-app-title`, `application-name`). The in-app heading still reads "Waktu Solat". The link-preview title (`og:title`, shown when the link is shared in chat apps) is still "Waktu Solat".
@@ -67,3 +67,7 @@ node tools/make-host.js
 node tools/test-jakim.js
 NODE_PATH=$(npm root -g) node tools/test.js path/to/solat_v7.html   # original optional: enables the "identical to v7" checks
 ```
+
+## Settings and Kiblat pages: larger text (15.Oct.2026)
+
+Text on both pages is 50% larger (body 15 px to 22.5 px, small text 13 px to 19.5 px, buttons and the sound list 14 px to 21 px, titles 24 px to 34 px; the on/off switch is scaled the same). Not scaled: the big bearing number (already 44 px) and the compass drawing. The dialog is wider on a laptop (560 px instead of 420 px); on a phone it still fills the screen width and scrolls. The page title is now "Tetapan" with "Azan" as a section. Cache name is solat-v6. Patch: tools/apply-dialog-text-gear.py.

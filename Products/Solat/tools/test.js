@@ -217,20 +217,20 @@ function jakimBody(url, mode) {
   console.log('M. Three-bar menu: the three icons open in a column');
   { const r = await open(fixedFile, { grant: true, geoPlan: [{ ok: [3.1, 101.8] }, { ok: [3.1, 101.8] }], address: { suburb: 'Bangi Lama', state: 'Selangor' }, wait: 1000 });
     const vis = sel => r.page.locator(sel).isVisible();
-    check('header shows ONE button (three bars); compass, bell and refresh are hidden', (await vis('#btn-menu')) && !(await vis('#btn-qibla')) && !(await vis('#btn-settings')) && !(await vis('#btn-refresh')));
+    check('header shows ONE button (three bars); compass, gear and refresh are hidden', (await vis('#btn-menu')) && !(await vis('#btn-qibla')) && !(await vis('#btn-settings')) && !(await vis('#btn-refresh')));
     const dh = (await r.page.locator('#date-main').boundingBox()).height;
     check('the date fits on one line again (it wrapped when three icons sat in the header)', dh < 32, 'height ' + dh);
     if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'menu-closed.png') });
     await r.page.click('#btn-menu');
     const bx = await Promise.all(['#btn-qibla', '#btn-settings', '#btn-refresh'].map(x => r.page.locator(x).boundingBox()));
-    check('opens the 3 icons in a column: same left edge, stacked top to bottom (compass, bell, refresh)', bx.every(b => b && Math.abs(b.x - bx[0].x) < 1) && bx[0].y < bx[1].y && bx[1].y < bx[2].y, JSON.stringify(bx.map(b => b && [Math.round(b.x), Math.round(b.y)])));
+    check('opens the 3 icons in a column: same left edge, stacked top to bottom (compass, gear, refresh)', bx.every(b => b && Math.abs(b.x - bx[0].x) < 1) && bx[0].y < bx[1].y && bx[1].y < bx[2].y, JSON.stringify(bx.map(b => b && [Math.round(b.x), Math.round(b.y)])));
     check('the column stays inside the screen (390 px wide)', bx.every(b => b.x >= 0 && b.x + b.width <= 390), JSON.stringify(bx.map(b => Math.round(b.x + b.width))));
     check('aria-expanded is "true" while open', (await r.page.getAttribute('#btn-menu', 'aria-expanded')) === 'true');
     if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'menu-open.png') });
     await r.page.click('#hero-name'); check('tapping elsewhere closes it', !(await vis('#btn-settings')) && (await r.page.getAttribute('#btn-menu', 'aria-expanded')) === 'false');
     await r.page.click('#btn-menu'); await r.page.keyboard.press('Escape'); check('Escape closes it', !(await vis('#btn-settings')));
     await r.page.click('#btn-menu'); await r.page.click('#btn-settings');
-    check('bell opens Settings and the menu closes', (await r.page.locator('#settings').evaluate(d => d.open)) && !(await vis('#btn-qibla')));
+    check('gear opens Settings and the menu closes', (await r.page.locator('#settings').evaluate(d => d.open)) && !(await vis('#btn-qibla')));
     await r.page.click('#settings-close');
     const before = await r.page.evaluate(() => window.__calls.length);
     await ui(r.page, '#btn-refresh'); await r.page.waitForTimeout(500);
@@ -317,7 +317,7 @@ function jakimBody(url, mode) {
     const doms = {};
     for (const [k, url] of [['v7', 'file://' + origArg], ['v7b', 'file://' + origArg], ['fixed', fixedFile]]) { jakimMode = 'abort'; const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); jakimMode = 'ok'; doms[k] = await r.page.evaluate(() => { const c = document.querySelector('main').cloneNode(true); const a = c.querySelector('.actions'); if (a) a.remove(); return c.outerHTML; }); await r.page.evaluate(() => { const b = document.getElementById('brand'); if (b) b.style.display = 'none'; const a = document.querySelector('.actions'); if (a) a.style.visibility = 'hidden'; }); shots[k] = await r.page.screenshot({ fullPage: true }); await r.ctx.close(); }
     const styleOf = f => (/<style>([\s\S]*?)<\/style>/.exec(fs.readFileSync(f, 'utf8')) || [])[1];
-    check('stylesheet is the same as your v7 plus only the added rules (footnote, diagnostic, help text, menu, compass)', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', '').replace(/\n#dbg\{[^}]*\}/, '').replace(/\ndetails\.help [^{]*\{[^}]*\}/g, '').replace(/\n\/\*menu\*\/[\s\S]*?\/\*\/menu\*\//, ''), 'differs');
+    check('stylesheet is the same as your v7 plus only the added rules (footnote, diagnostic, help text, menu, compass, larger dialog text)', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', '').replace(/\n#dbg\{[^}]*\}/, '').replace(/\ndetails\.help [^{]*\{[^}]*\}/g, '').replace(/\n\/\*menu\*\/[\s\S]*?\/\*\/menu\*\//, '').replace(/\n\/\*dlg\*\/[\s\S]*?\/\*\/dlg\*\//, '').replace('max-width:560px;width:calc(100% - 32px);padding:20px;font-size:22.5px}', 'max-width:420px;width:calc(100% - 32px);padding:20px}').replace('\n[hidden]{', '\n.icon-btn.off .slash{display:inline}.slash{display:none}\n[hidden]{'), 'differs');
     check('page content (<main> markup, header icons aside) is identical to your v7 plus only the footnote and the hidden diagnostic element', doms.v7 === doms.fixed.replace(/\s*<footer id="brand">[^<]*<\/footer>/, '').replace(/\s*<pre id="dbg"[^>]*><\/pre>/, ''), 'differs');
     const p = await browser.newPage();
     const cmp = async (x, y) => p.evaluate(async ([a, b]) => { const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = 'data:image/png;base64,' + s; }); const [u, v] = await Promise.all([load(a), load(b)]); if (u.width !== v.width || u.height !== v.height) return { size: false }; const g = i => { const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const t = c.getContext('2d'); t.drawImage(i, 0, 0); return t.getImageData(0, 0, i.width, i.height).data; }; const d1 = g(u), d2 = g(v); let n = 0, max = 0, big = 0; for (let k = 0; k < d1.length; k += 4) { const d = Math.max(Math.abs(d1[k] - d2[k]), Math.abs(d1[k + 1] - d2[k + 1]), Math.abs(d1[k + 2] - d2[k + 2])); if (d) { n++; max = Math.max(max, d); if (d > 4) big++; } } return { size: true, differing: n, maxDelta: max, over4: big }; }, [x.toString('base64'), y.toString('base64')]);

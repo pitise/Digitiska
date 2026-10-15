@@ -32,7 +32,6 @@ h1{font-size:18px;margin:3px 0 0;font-weight:600}
 .actions{display:flex;gap:8px}
 .icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);color:var(--fg);display:grid;place-items:center;cursor:pointer}
 .icon-btn .ico{width:18px;height:18px}
-.icon-btn.off .slash{display:inline}.slash{display:none}
 [hidden]{display:none!important}
 .notice{margin:10px 0 0;padding:8px 12px;border-radius:10px;background:#3a2e10;color:var(--gold2);font-size:13px;display:flex;gap:10px;justify-content:space-between;align-items:center}
 .notice button{background:none;border:1px solid var(--gold);color:var(--gold2);border-radius:8px;padding:3px 10px;cursor:pointer}
@@ -100,10 +99,23 @@ details.help p{font-size:13px;color:var(--mut);margin:6px 0}
 @media (prefers-reduced-motion:reduce){#qibla.mode-live .q-mode::before{animation:none}}
 /*/menu*/
 #dbg{font:11px/1.4 ui-monospace,monospace;color:var(--mut);white-space:pre-wrap;word-break:break-all;margin:8px 0 0;padding:8px;border:1px solid var(--line);border-radius:8px;text-align:left}
-dialog{border:1px solid var(--line);border-radius:22px;background:var(--bg2);color:var(--fg);max-width:420px;width:calc(100% - 32px);padding:20px}
+dialog{border:1px solid var(--line);border-radius:22px;background:var(--bg2);color:var(--fg);max-width:560px;width:calc(100% - 32px);padding:20px;font-size:22.5px}
 dialog::backdrop{background:#000a}
 dialog h2{margin:0 0 12px;font-family:Georgia,serif;font-weight:500}
 dialog h3{margin:18px 0 8px;font-size:15px;color:var(--gold2)}
+/*dlg*/
+dialog h2{font-size:34px}
+dialog h3{font-size:22.5px}
+dialog .small,dialog details.help summary,dialog details.help p{font-size:19.5px}
+dialog label.f{font-size:18px}
+dialog select{font-size:21px;padding:12px 15px}
+dialog .btn{font-size:21px;padding:13px 21px}
+dialog .q-status{font-size:22.5px}
+dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
+.switch{width:69px;height:39px;border-radius:20px}
+.switch::after{top:4.5px;left:4.5px;width:30px;height:30px}
+.switch-row input:checked+.switch::after{left:34.5px}
+/*/dlg*/
 .small{font-size:13px;color:var(--mut);margin:6px 0}
 .warn{color:var(--gold2)}
 .switch-row{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
@@ -135,8 +147,8 @@ dialog h3{margin:18px 0 8px;font-size:15px;color:var(--gold2)}
       <button id="btn-qibla" class="icon-btn" type="button" aria-label="Arah kiblat">
         <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z"/></svg>
       </button>
-      <button id="btn-settings" class="icon-btn" type="button" aria-label="Tetapan azan">
-        <svg class="ico" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path class="slash" d="M3 3l18 18"/></svg>
+      <button id="btn-settings" class="icon-btn" type="button" aria-label="Tetapan">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
       <button id="btn-refresh" class="icon-btn" type="button" aria-label="Kemas kini lokasi saya">
         <svg class="ico" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
@@ -176,7 +188,8 @@ dialog h3{margin:18px 0 8px;font-size:15px;color:var(--gold2)}
 </main>
 
 <dialog id="settings">
-  <h2>Azan</h2>
+  <h2>Tetapan</h2>
+  <h3 style="margin-top:0">Azan</h3>
   <label class="switch-row" for="azan-toggle">
     <span>Mainkan azan pada waktu solat</span>
     <input id="azan-toggle" type="checkbox" role="switch"><span class="switch"></span>
@@ -510,7 +523,6 @@ function render(force){
     $("date-main").textContent=now.toLocaleDateString("ms-MY",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
     try{const p=new Intl.DateTimeFormat("en-u-ca-islamic-umalqura",{day:"numeric",month:"numeric",year:"numeric"}).formatToParts(now);
       const g=t=>+p.find(x=>x.type===t).value;$("date-hijri").textContent=`${g("day")} ${HIJRI_MS[g("month")-1]} ${g("year")} H`}catch{$("date-hijri").textContent=""}
-    $("btn-settings").classList.toggle("off",!st.azan);
   }
   // Determine current prayer
   const seq=[["isyak",today._yIsyak],["subuh",today.subuh],["syuruk",today.syuruk],["zohor",today.zohor],["asar",today.asar],["maghrib",today.maghrib],["isyak",today.isyak],["subuh",tomorrow.subuh]];
@@ -568,9 +580,9 @@ async function soundStatus(){const s=$("sound-status");
 /* Settings dialog */
 const dlg=$("settings");
 function zoneNow(){const z=st.loc.zone&&ZONES.find(x=>x[0]===st.loc.zone);$("zone-now").textContent=z?"Zon dikenal pasti: "+z[0]+" — "+z[2].join(", "):"Zon dikenal pasti: belum ada. Pilih daerah anda dalam senarai Lokasi."}
-$("btn-settings").onclick=()=>{$("azan-toggle").checked=st.azan;$("sound").value=st.sound;soundStatus();zoneNow();dlg.showModal()};
+$("btn-settings").onclick=()=>{$("azan-toggle").checked=st.azan;$("sound").value=st.sound;soundStatus();zoneNow();dlg.showModal();dlg.scrollTop=0};
 $("settings-close").onclick=()=>dlg.close();
-$("azan-toggle").onchange=e=>{st.azan=e.target.checked;SS("azan",st.azan);$("btn-settings").classList.toggle("off",!st.azan);
+$("azan-toggle").onchange=e=>{st.azan=e.target.checked;SS("azan",st.azan);
   if(st.azan&&"Notification" in window&&Notification.permission==="default")Notification.requestPermission()};
 $("sound").onchange=e=>{const v=e.target.value;if(v==="custom"){$("file").click()}st.sound=v;SS("sound",v);soundStatus()};
 $("file").onchange=async e=>{const f=e.target.files[0];if(!f)return;await saveFile(f);if(customURL)URL.revokeObjectURL(customURL);customURL=URL.createObjectURL(f);st.sound="custom";SS("sound","custom");$("sound").value="custom";soundStatus()};
@@ -610,7 +622,7 @@ function qOpen(){qBearing();qHead=null;qSeen=false;qd.classList.remove("aligned"
   qMode("wait");qSet("q-status","Mencari sensor kompas…");const DOE=window.DeviceOrientationEvent;
   if(DOE&&typeof DOE.requestPermission==="function"){$("q-perm").hidden=false;qMode("wait","Menunggu kebenaran sensor");qSet("q-status","Sentuh “Benarkan sensor” untuk menghidupkan kompas.")}
   else if(DOE)qListen();else qStatic();
-  qd.showModal()}
+  qd.showModal();qd.scrollTop=0}
 $("btn-qibla").onclick=qOpen;
 $("q-perm").onclick=()=>{const fail=()=>{$("q-perm").hidden=true;qStatic()};
   DeviceOrientationEvent.requestPermission().then(r=>{if(r==="granted"){$("q-perm").hidden=true;qMode("wait");qSet("q-status","Mencari sensor kompas…");qListen()}else fail()}).catch(fail)};
