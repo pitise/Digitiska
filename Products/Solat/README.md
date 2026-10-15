@@ -71,3 +71,10 @@ NODE_PATH=$(npm root -g) node tools/test.js path/to/solat_v7.html   # original o
 ## Settings and Kiblat pages: larger text (15.Oct.2026)
 
 Text on both pages is 50% larger (body 15 px to 22.5 px, small text 13 px to 19.5 px, buttons and the sound list 14 px to 21 px, titles 24 px to 34 px; the on/off switch is scaled the same). Not scaled: the big bearing number (already 44 px) and the compass drawing. The dialog is wider on a laptop (560 px instead of 420 px); on a phone it still fills the screen width and scrolls. The page title is now "Tetapan" with "Azan" as a section. Cache name is solat-v6. Patch: tools/apply-dialog-text-gear.py.
+
+## Larger header icons, visible sensor button, safety note (15.Oct.2026)
+
+- Header icons: buttons 38 px to 48 px, drawings 18 px to 26 px (on a 320 px wide screen the date now wraps to two lines; at 393 px it does not).
+- "Benarkan sensor" is now the gold primary button and sits directly under the Langsung/Tetap badge (before, it was dark on dark and below the long text, off screen on a phone). It only appears when the browser offers a sensor-permission prompt (iPhone Safari style).
+- Settings has a new "Keselamatan" section and one added sentence under Privasi. The statement "tiada spyware atau malware ditemui" rests on a reading and search of this file by the developer (hosts it contacts, no third-party script/font/image/iframe, no eval, no beacon); it is not an independent antivirus or security audit. The outgoing hosts listed in the app are exactly the ones found in the code: e-solat.gov.my, nominatim.openstreetmap.org, islamcan.com, and ipwho.is / ipapi.co / get.geojs.io (only on "Guna anggaran").
+- Cache name is solat-v7. Patch: tools/apply-icons-sensor-privacy.py.

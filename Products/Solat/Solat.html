@@ -30,8 +30,8 @@ h1{font-size:18px;margin:3px 0 0;font-weight:600}
 #date-hijri{margin:1px 0 0;color:var(--mut);font-size:13px}
 .ico{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .actions{display:flex;gap:8px}
-.icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);color:var(--fg);display:grid;place-items:center;cursor:pointer}
-.icon-btn .ico{width:18px;height:18px}
+.icon-btn{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);color:var(--fg);display:grid;place-items:center;cursor:pointer}
+.icon-btn .ico{width:26px;height:26px}
 [hidden]{display:none!important}
 .notice{margin:10px 0 0;padding:8px 12px;border-radius:10px;background:#3a2e10;color:var(--gold2);font-size:13px;display:flex;gap:10px;justify-content:space-between;align-items:center}
 .notice button{background:none;border:1px solid var(--gold);color:var(--gold2);border-radius:8px;padding:3px 10px;cursor:pointer}
@@ -68,7 +68,7 @@ details.help summary{cursor:pointer;color:var(--gold2);font-size:13px;margin:6px
 details.help p{font-size:13px;color:var(--mut);margin:6px 0}
 /*menu*/
 .actions{position:relative}
-.menu{position:absolute;top:calc(100% + 8px);right:0;z-index:20;display:flex;flex-direction:column;gap:8px;padding:8px;background:var(--card);border:1px solid var(--line);border-radius:26px;box-shadow:0 14px 28px -12px #000c}
+.menu{position:absolute;top:calc(100% + 8px);right:0;z-index:20;display:flex;flex-direction:column;gap:8px;padding:8px;background:var(--card);border:1px solid var(--line);border-radius:32px;box-shadow:0 14px 28px -12px #000c}
 #btn-menu[aria-expanded="true"]{border-color:var(--gold)}
 .dial{display:grid;place-items:center;margin:8px 0 4px}
 .dial svg{width:min(100%,280px);height:auto}
@@ -220,7 +220,11 @@ dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
     <p>Senarai zon dalam aplikasi ini bersumber daripada panduan komuniti (2020), bukan senarai rasmi JAKIM, dan mungkin telah berubah.</p>
   </details>
   <h3>Privasi</h3>
-  <p class="small">Tiada akaun, iklan atau analitik. Lokasi disimpan pada peranti. Jadual solat diambil terus dari e-solat.gov.my (JAKIM); hanya kod zon dihantar. Nama tempat dan carian menggunakan OpenStreetMap Nominatim (kedudukan dibulatkan kira-kira 1 km). Anggaran lokasi internet hanya berjalan jika anda tekan "Guna anggaran"; ketika itu alamat IP anda dihantar kepada perkhidmatan tersebut.</p>
+  <p class="small">Tiada akaun, iklan atau analitik. Lokasi disimpan pada peranti. Jadual solat diambil terus dari e-solat.gov.my (JAKIM); hanya kod zon dihantar. Nama tempat dan carian menggunakan OpenStreetMap Nominatim (kedudukan dibulatkan kira-kira 1 km). Anggaran lokasi internet hanya berjalan jika anda tekan "Guna anggaran"; ketika itu alamat IP anda dihantar kepada perkhidmatan tersebut. Pelayan hos (Google Firebase Hosting) mungkin merekod lawatan seperti kebanyakan pelayan web.</p>
+  <h3>Keselamatan</h3>
+  <p class="small">Keselamatan: aplikasi ini ialah satu fail yang kodnya boleh dibaca. Ia tidak memuatkan skrip, fon, imej atau iklan daripada pihak ketiga, tiada alat analitik atau pengesan, dan tidak dipasang sebagai program pada telefon. Kod ini telah disemak untuk sambungan luar dan skrip tersembunyi; tiada spyware atau malware ditemui.</p>
+  <p class="small">Sambungan keluar hanya ke: e-solat.gov.my (jadual JAKIM), OpenStreetMap Nominatim (nama tempat), islamcan.com (bunyi azan, hanya apabila dimainkan) dan perkhidmatan anggaran lokasi internet (hanya jika anda tekan "Guna anggaran").</p>
+  <p class="small warn">Salinan yang dihantar semula oleh pihak lain mungkin telah diubah. Dapatkan aplikasi ini daripada pautan asal Digitiska sahaja.</p>
   <button id="settings-close" class="btn primary" type="button" style="margin-top:10px">Tutup</button>
 </dialog>
 
@@ -228,6 +232,7 @@ dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
   <h2>Arah Kiblat</h2>
   <p id="q-place" class="small"></p>
   <div id="q-mode" class="q-mode" aria-live="polite"></div>
+  <div class="q-mid" style="margin-top:12px"><button id="q-perm" class="btn primary" type="button" hidden>Benarkan sensor</button></div>
   <div class="dial"><svg id="q-svg" viewBox="0 0 260 260" role="img" aria-label="Kompas kiblat">
     <circle class="q-ring" cx="130" cy="130" r="120"/>
     <g id="q-dial"><line class="q-tick major" x1="130.0" y1="34.0" x2="130.0" y2="20.0"/><line class="q-tick" x1="156.4" y1="31.5" x2="158.5" y2="23.7"/><line class="q-tick" x1="181.0" y1="41.7" x2="185.0" y2="34.7"/><line class="q-tick" x1="202.1" y1="57.9" x2="207.8" y2="52.2"/><line class="q-tick" x1="218.3" y1="79.0" x2="225.3" y2="75.0"/><line class="q-tick" x1="228.5" y1="103.6" x2="236.3" y2="101.5"/><line class="q-tick major" x1="226.0" y1="130.0" x2="240.0" y2="130.0"/><line class="q-tick" x1="228.5" y1="156.4" x2="236.3" y2="158.5"/><line class="q-tick" x1="218.3" y1="181.0" x2="225.3" y2="185.0"/><line class="q-tick" x1="202.1" y1="202.1" x2="207.8" y2="207.8"/><line class="q-tick" x1="181.0" y1="218.3" x2="185.0" y2="225.3"/><line class="q-tick" x1="156.4" y1="228.5" x2="158.5" y2="236.3"/><line class="q-tick major" x1="130.0" y1="226.0" x2="130.0" y2="240.0"/><line class="q-tick" x1="103.6" y1="228.5" x2="101.5" y2="236.3"/><line class="q-tick" x1="79.0" y1="218.3" x2="75.0" y2="225.3"/><line class="q-tick" x1="57.9" y1="202.1" x2="52.2" y2="207.8"/><line class="q-tick" x1="41.7" y1="181.0" x2="34.7" y2="185.0"/><line class="q-tick" x1="31.5" y1="156.4" x2="23.7" y2="158.5"/><line class="q-tick major" x1="34.0" y1="130.0" x2="20.0" y2="130.0"/><line class="q-tick" x1="31.5" y1="103.6" x2="23.7" y2="101.5"/><line class="q-tick" x1="41.7" y1="79.0" x2="34.7" y2="75.0"/><line class="q-tick" x1="57.9" y1="57.9" x2="52.2" y2="52.2"/><line class="q-tick" x1="79.0" y1="41.7" x2="75.0" y2="34.7"/><line class="q-tick" x1="103.6" y1="31.5" x2="101.5" y2="23.7"/><text class="n" x="130.0" y="56.0">U</text><text x="210.0" y="136.0">T</text><text x="130.0" y="216.0">S</text><text x="50.0" y="136.0">B</text>
@@ -239,7 +244,6 @@ dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
   </svg></div>
   <div class="q-mid"><div id="q-deg" class="q-deg"></div><div id="q-dir" class="small"></div><div id="q-turn" class="small"></div><div id="q-head" class="small"></div></div>
   <p id="q-status" class="q-status" role="status"></p>
-  <div class="q-mid"><button id="q-perm" class="btn" type="button" hidden>Benarkan sensor</button></div>
   <h3>Cara guna</h3>
   <p class="small">Letakkan telefon mendatar (rata) dan jauhkan daripada logam atau magnet. Putar sehingga anak panah emas dengan lambang Kaabah menghala ke atas; ketika itu anda menghadap kiblat.</p>
   <p class="small">Jika bacaan tidak stabil, gerakkan telefon membentuk angka 8 untuk menentukur kompas. Kunci putaran skrin kepada menegak.</p>
