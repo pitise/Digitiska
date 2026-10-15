@@ -65,6 +65,8 @@ select,input[type=text]{width:100%;padding:8px 10px;border-radius:10px;border:1p
 .row{display:flex;gap:8px}
 footer{text-align:center;color:var(--mut);font-size:11px;margin-top:10px}
 #brand{margin-top:4px}
+details.help summary{cursor:pointer;color:var(--gold2);font-size:13px;margin:6px 0}
+details.help p{font-size:13px;color:var(--mut);margin:6px 0}
 #dbg{font:11px/1.4 ui-monospace,monospace;color:var(--mut);white-space:pre-wrap;word-break:break-all;margin:8px 0 0;padding:8px;border:1px solid var(--line);border-radius:8px;text-align:left}
 dialog{border:1px solid var(--line);border-radius:22px;background:var(--bg2);color:var(--fg);max-width:420px;width:calc(100% - 32px);padding:20px}
 dialog::backdrop{background:#000a}
@@ -153,6 +155,17 @@ dialog h3{margin:18px 0 8px;font-size:15px;color:var(--gold2)}
     <button id="azan-stop" class="btn" type="button">Henti</button>
   </div>
   <p class="small warn">Azan hanya berbunyi ketika aplikasi ini dibuka. Aplikasi web tidak boleh mengejutkan telefon yang ditutup atau dikunci.</p>
+  <h3>Zon JAKIM</h3>
+  <p id="zone-now" class="small"></p>
+  <details class="help">
+    <summary>Bagaimana pengumpulan zon berfungsi?</summary>
+    <p>JAKIM tidak mengeluarkan waktu solat untuk setiap lokasi. Negara dibahagikan kepada beberapa puluh zon (58 dalam senarai yang digunakan aplikasi ini), dan semua tempat dalam satu zon menggunakan waktu yang sama. Contohnya, Hulu Langat dan Shah Alam berada dalam zon SGR01.</p>
+    <p>Aplikasi mengenal pasti zon anda daripada lokasi, kemudian mengambil jadual zon itu terus dari e-solat.gov.my.</p>
+    <p>• Jika di bawah skrin tertulis “Jadual JAKIM e-Solat · Zon …”, waktu yang dipaparkan sama seperti jadual JAKIM untuk zon itu.</p>
+    <p>• Jika tertulis “Kiraan pada peranti”, zon belum dapat dikenal pasti atau jadual JAKIM tidak dapat dimuat. Waktu dikira mengikut kedudukan tepat anda, jadi boleh berbeza kira-kira 1–2 minit daripada waktu zon. Pilih daerah anda dalam senarai Lokasi untuk mendapatkan waktu JAKIM.</p>
+    <p>• Tempat dalam zon yang berlainan boleh mempunyai waktu yang berbeza.</p>
+    <p>Senarai zon dalam aplikasi ini bersumber daripada panduan komuniti (2020), bukan senarai rasmi JAKIM, dan mungkin telah berubah.</p>
+  </details>
   <h3>Privasi</h3>
   <p class="small">Tiada akaun, iklan atau analitik. Lokasi disimpan pada peranti. Jadual solat diambil terus dari e-solat.gov.my (JAKIM); hanya kod zon dihantar. Nama tempat dan carian menggunakan OpenStreetMap Nominatim (kedudukan dibulatkan kira-kira 1 km). Anggaran lokasi internet hanya berjalan jika anda tekan "Guna anggaran"; ketika itu alamat IP anda dihantar kepada perkhidmatan tersebut.</p>
   <button id="settings-close" class="btn primary" type="button" style="margin-top:10px">Tutup</button>
@@ -477,7 +490,8 @@ async function soundStatus(){const s=$("sound-status");
 
 /* Settings dialog */
 const dlg=$("settings");
-$("btn-settings").onclick=()=>{$("azan-toggle").checked=st.azan;$("sound").value=st.sound;soundStatus();dlg.showModal()};
+function zoneNow(){const z=st.loc.zone&&ZONES.find(x=>x[0]===st.loc.zone);$("zone-now").textContent=z?"Zon dikenal pasti: "+z[0]+" — "+z[2].join(", "):"Zon dikenal pasti: belum ada. Pilih daerah anda dalam senarai Lokasi."}
+$("btn-settings").onclick=()=>{$("azan-toggle").checked=st.azan;$("sound").value=st.sound;soundStatus();zoneNow();dlg.showModal()};
 $("settings-close").onclick=()=>dlg.close();
 $("azan-toggle").onchange=e=>{st.azan=e.target.checked;SS("azan",st.azan);$("btn-settings").classList.toggle("off",!st.azan);
   if(st.azan&&"Notification" in window&&Notification.permission==="default")Notification.requestPermission()};

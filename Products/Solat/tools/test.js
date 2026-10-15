@@ -149,6 +149,13 @@ function jakimBody(url, mode) {
     check("list shows JAKIM's times, not the calculation (" + REAL_LIST.join(' ') + ')', (await times()).join() === REAL_LIST.join(), (await times()).join() + ' vs calc ' + CALC_LIST.join());
     check('requests go only to e-solat.gov.my for the timetable: zone code + period, nothing about the user', r.net.jakim.every(u => /^zone=(WLY01|SGR01)&period=(year|month)$/.test(u)) && r.net.jakim.includes('zone=SGR01&period=year'), r.net.jakim.join(' '));
     check('Zohor started 13:03 (JAKIM)', (await r.t('hero-start')) === '13:03', await r.t('hero-start'));
+    await r.page.click('#btn-settings');
+    check('Settings has the section "Zon JAKIM" showing the current zone and its districts', /^Zon dikenal pasti: SGR01 — Gombak, Petaling, Sepang, Hulu Langat, Hulu Selangor, Shah Alam$/.test((await r.t('zone-now')).trim()) && (await r.page.locator('#settings h3', { hasText: 'Zon JAKIM' }).count()) === 1, await r.t('zone-now'));
+    await r.page.click('#settings summary');
+    const help = await r.page.locator('#settings details.help').innerText();
+    check('explanation (Bahasa Malaysia) opens and covers: grouping, the two footer cases, the 1–2 minit difference, and that the zone list is not official', /58/.test(help) && /satu zon menggunakan waktu yang sama/.test(help) && /Jadual JAKIM e-Solat/.test(help) && /Kiraan pada peranti/.test(help) && /1–2 minit/.test(help) && /bukan senarai rasmi JAKIM/.test(help), help.slice(0, 200));
+    if (shotDir) { await r.page.evaluate(() => document.querySelector('#settings').scrollTo(0, 220)); await r.page.screenshot({ path: path.join(shotDir, 'settings-zone.png') }); }
+    await r.page.click('#settings-close');
     if (shotDir) await r.page.screenshot({ path: path.join(shotDir, 'jakim-ok.png'), fullPage: true });
     jakimMode = 'abort'; await r.page.reload(); await r.page.waitForFunction(() => document.getElementById('hero-count').textContent !== '--:--:--'); await r.page.waitForTimeout(1500);
     check('after reload with JAKIM unreachable: cached JAKIM times still shown and labelled JAKIM', (await times()).join() === REAL_LIST.join() && /Jadual JAKIM e-Solat · Zon SGR01/.test(await r.t('src')), (await times()).join() + ' | ' + await r.t('src'));
@@ -166,6 +173,9 @@ function jakimBody(url, mode) {
     jakimMode = 'ok';
 
     r = await open(fixedFile, { grant: true, address: { county: 'Kajang', state: 'Selangor' }, wait: 1200 });
+    await r.page.click('#btn-settings');
+    check('Settings says the zone is not identified yet when no zone matched', /belum ada\. Pilih daerah anda/.test(await r.t('zone-now')), await r.t('zone-now'));
+    await r.page.click('#settings-close');
     check('district not in JAKIM list -> NO guess: no request for any zone but the default place WLY01, footer asks to pick a district', r.net.jakim.every(u => u.startsWith('zone=WLY01')) && /pilih daerah untuk jadual JAKIM/.test(await r.t('src')), r.net.jakim.join(' ') + ' | ' + await r.t('src'));
     await r.ctx.close();
 
@@ -206,7 +216,7 @@ function jakimBody(url, mode) {
     const doms = {};
     for (const [k, url] of [['v7', 'file://' + origArg], ['v7b', 'file://' + origArg], ['fixed', fixedFile]]) { jakimMode = 'abort'; const r = await open(url, { grant: true, address: addr, wait: 1200, frozen: true }); jakimMode = 'ok'; doms[k] = await r.page.evaluate(() => document.querySelector('main').outerHTML); await r.page.evaluate(() => { const b = document.getElementById('brand'); if (b) b.style.display = 'none'; }); shots[k] = await r.page.screenshot({ fullPage: true }); await r.ctx.close(); }
     const styleOf = f => (/<style>([\s\S]*?)<\/style>/.exec(fs.readFileSync(f, 'utf8')) || [])[1];
-    check('stylesheet is the same as your v7 plus only the footnote spacing and the hidden-diagnostic rule', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', '').replace(/\n#dbg\{[^}]*\}/, ''), 'differs');
+    check('stylesheet is the same as your v7 plus only the footnote spacing, hidden-diagnostic and help-text rules', styleOf(origArg) !== undefined && styleOf(origArg) === styleOf(path.join(root, 'Solat.html')).replace('\n#brand{margin-top:4px}', '').replace(/\n#dbg\{[^}]*\}/, '').replace(/\ndetails\.help [^{]*\{[^}]*\}/g, ''), 'differs');
     check('page content (<main> markup) is identical to your v7 plus only the footnote and the hidden diagnostic element', doms.v7 === doms.fixed.replace(/\s*<footer id="brand">[^<]*<\/footer>/, '').replace(/\s*<pre id="dbg"[^>]*><\/pre>/, ''), 'differs');
     const p = await browser.newPage();
     const cmp = async (x, y) => p.evaluate(async ([a, b]) => { const load = s => new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = 'data:image/png;base64,' + s; }); const [u, v] = await Promise.all([load(a), load(b)]); if (u.width !== v.width || u.height !== v.height) return { size: false }; const g = i => { const c = document.createElement('canvas'); c.width = i.width; c.height = i.height; const t = c.getContext('2d'); t.drawImage(i, 0, 0); return t.getImageData(0, 0, i.width, i.height).data; }; const d1 = g(u), d2 = g(v); let n = 0, max = 0, big = 0; for (let k = 0; k < d1.length; k += 4) { const d = Math.max(Math.abs(d1[k] - d2[k]), Math.abs(d1[k + 1] - d2[k + 1]), Math.abs(d1[k + 2] - d2[k + 2])); if (d) { n++; max = Math.max(max, d); if (d > 4) big++; } } return { size: true, differing: n, maxDelta: max, over4: big }; }, [x.toString('base64'), y.toString('base64')]);
