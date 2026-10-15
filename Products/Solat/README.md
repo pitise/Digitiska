@@ -86,3 +86,7 @@ Text on both pages is 50% larger (body 15 px to 22.5 px, small text 13 px to 19.
 ## Live on Cloudflare Pages (16.Oct.2026)
 
 Solat is deployed with Pages Direct Upload (project `solat`, test address solat-8ij.pages.dev) and served at https://solat.digitiska.com. Checked from the owner's computer: the served page hash equals the v7 file (1a427292d4a488d472afdecbe568d364670eda9e2e98163acd0fffa943adf823), `sw.js` is served as JavaScript with `cache-control: no-cache` and `x-content-type-options: nosniff`. First run found the digitiska.com zone replacing `no-cache` with `max-age=14400`; fixed by setting Browser Cache TTL to Respect Existing Headers (see DEPLOY-CLOUDFLARE.md step 2b). Not yet tested on real phones: install from the new address, compass behaviour on the Samsung A54 and the Huawei MatePad. The Firebase site stays online until users have moved.
+
+## Heading and official address (16.Oct.2026)
+
+On request: the heading at the top of the app now reads "Solat Times" (was "Waktu Solat"), and the Keselamatan text ends "...pautan asal Digitiska sahaja: solat.digitiska.com". Still "Waktu Solat" (not requested): the footer line before the zone text, the desktop tab title countdown, and the share-link title (og:title). Cache name is solat-v8. Patch: tools/apply-heading-address.py. The pixel check against v7 now skips the top-left heading corner only; everything else is still compared.

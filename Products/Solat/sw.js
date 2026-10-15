@@ -1,6 +1,6 @@
 /* Service worker: keeps the app shell so Solat opens instantly and offline. Only same-origin files are cached;
    prayer-time, place and audio requests to other sites always go to the network. Bump CACHE after any change. */
-var CACHE = 'solat-v7';
+var CACHE = 'solat-v8';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', function (e) {
