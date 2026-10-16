@@ -1,6 +1,6 @@
 /* Service worker: keeps the app shell so Solat opens instantly and offline. Only same-origin files are cached;
    prayer-time, place and audio requests to other sites always go to the network. Bump CACHE after any change. */
-var CACHE = 'solat-v9';
+var CACHE = 'solat-v10';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', function (e) {
@@ -21,5 +21,14 @@ self.addEventListener('fetch', function (e) {
       if (hit) return hit;
       return net.then(function (res) { return res || (req.mode === 'navigate' ? cache.match('index.html') : Response.error()); });
     });
+  }));
+});
+
+/* Tapping a prayer-time notification opens (or focuses) the app. */
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+    for (var i = 0; i < list.length; i++) { if ('focus' in list[i]) return list[i].focus(); }
+    return self.clients.openWindow('./');
   }));
 });

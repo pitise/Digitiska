@@ -313,6 +313,37 @@ function jakimBody(url, mode) {
   }
 
   if (origArg) {
+    console.log('N. Prayer-time notification (through the service worker, as phones require) and the Settings status');
+    { const r = await open(hostUrl, { grant: true, address: { county: 'Hulu Langat', state: 'Selangor' }, wait: 1200 });
+      await r.page.evaluate(() => navigator.serviceWorker.ready);
+      const setPerm = v => r.page.evaluate(p => Object.defineProperty(Notification, 'permission', { get: () => p, configurable: true }), v);
+      const vis2 = sel => r.page.locator(sel).isVisible();
+      const reopen = async () => { if (await vis2('#settings')) { await r.page.click('#settings-close'); } await ui(r.page, '#btn-settings'); };
+      await r.page.evaluate(() => { window.__notes = []; ServiceWorkerRegistration.prototype.showNotification = function (t, o) { window.__notes.push([t, o]); return Promise.resolve(); }; });
+      await setPerm('default'); await reopen();
+      check('Settings has a Notifikasi section; permission not asked yet -> "Benarkan notifikasi" shown, test button hidden', (await r.page.locator('#settings h3', { hasText: 'Notifikasi' }).count()) === 1 && /belum dibenarkan/.test(await r.t('notif-status')) && (await vis2('#notif-allow')) && !(await vis2('#notif-test')), await r.t('notif-status'));
+      await setPerm('granted'); await reopen();
+      check('permission granted -> status says allowed, "Uji notifikasi" shown, allow button hidden', /dibenarkan\./.test(await r.t('notif-status')) && (await vis2('#notif-test')) && !(await vis2('#notif-allow')), await r.t('notif-status'));
+      await r.page.click('#notif-test'); await r.page.waitForTimeout(300);
+      let notes = await r.page.evaluate(() => window.__notes.map(n => [n[0], n[1].body, n[1].tag, n[1].icon, n[1].silent]));
+      check('"Uji notifikasi" sends a notification through the service worker titled "Solat Times · Ujian" (silent while azan is on)', notes.length === 1 && notes[0][0] === 'Solat Times · Ujian' && notes[0][2] === 'solat-time' && notes[0][3] === 'icons/icon-192.png' && notes[0][4] === true, JSON.stringify(notes));
+      await r.page.click('#azan-toggle', { force: true }); await r.page.click('#notif-test'); await r.page.waitForTimeout(300);
+      notes = await r.page.evaluate(() => window.__notes.map(n => [n[0], n[1].silent]));
+      check('azan off -> the notification is not silent (the phone makes its own sound)', notes.length === 2 && notes[1][1] === false, JSON.stringify(notes));
+      await r.page.click('#settings-close');
+      // a real prayer time: jump the clock to 20 s after the next prayer in the list
+      const rows = await r.page.evaluate(() => [...document.querySelectorAll('#list li')].filter(li => !li.classList.contains('minor')).map(li => [li.querySelector('.n').firstChild.textContent.trim(), li.querySelector('.t').textContent.trim()]));
+      const nowMin = 13 * 60 + 10; const next = rows.find(x => { const [h, m] = x[1].split(':').map(Number); return h * 60 + m > nowMin; });
+      const [nh, nm] = next[1].split(':').map(Number);
+      await r.page.clock.fastForward((nh * 60 + nm - nowMin) * 60000 + 20000); await r.page.waitForTimeout(500);
+      notes = await r.page.evaluate(() => window.__notes.map(n => [n[0], n[1].body]));
+      check('prayer time reached (' + next[0] + ' ' + next[1] + ') -> notification "Solat Times · ' + next[0] + '" with the place in the text', notes.length === 3 && notes[2][0] === 'Solat Times · ' + next[0] && new RegExp(next[0]).test(notes[2][1]) && /bagi/.test(notes[2][1]), JSON.stringify(notes));
+      await setPerm('denied'); await reopen();
+      check('permission blocked -> clear message, both buttons hidden', /disekat/.test(await r.t('notif-status')) && !(await vis2('#notif-allow')) && !(await vis2('#notif-test')), await r.t('notif-status'));
+      check('service worker opens or focuses the app when a notification is tapped', /notificationclick/.test(fs.readFileSync(path.join(root, 'sw.js'), 'utf8')));
+      check('second pinch-zoom layer present: gesture events are cancelled', await r.page.evaluate(() => { const e = new Event('gesturestart', { cancelable: true }); document.dispatchEvent(e); return e.defaultPrevented; }));
+      await r.ctx.close(); }
+
     console.log('G. Looks identical to your v7 (pixel comparison, same time, same place, no notice)');
     const addr = { county: 'Hulu Langat', state: 'Selangor' }, shots = {};
     const doms = {};
