@@ -1,0 +1,38 @@
+// Unit tests for the pure Qibla helpers inside Solat.html.  node tools/test-qibla.js
+const fs = require('fs'), vm = require('vm'), path = require('path');
+const html = fs.readFileSync(path.join(__dirname, '..', 'Solat.html'), 'utf8');
+const a = html.indexOf('/*<qibla-pure>*/'), b = html.indexOf('/*</qibla-pure>*/');
+if (a < 0 || b < 0) throw new Error('markers not found');
+const sb = { Math, Number, String, Array, result: null }; vm.createContext(sb);
+vm.runInContext(html.slice(a, b) + '\nresult={qiblaBearing,dirName,angDiff,norm360,headingFromEvent,smoothHeading};', sb);
+const { qiblaBearing: Q, dirName, angDiff, norm360, headingFromEvent: H, smoothHeading: S } = sb.result;
+let bad = 0;
+const eq = (n, got, want) => { const ok = JSON.stringify(got) === JSON.stringify(want); if (!ok) bad++; console.log((ok ? '  ok    ' : '  FAIL  ') + n + (ok ? '' : '   got ' + JSON.stringify(got) + ', want ' + JSON.stringify(want))); };
+const near = (n, got, want, tol) => { const ok = Math.abs(got - want) <= tol; if (!ok) bad++; console.log((ok ? '  ok    ' : '  FAIL  ') + n + ' = ' + got.toFixed(2) + (ok ? '' : '   want ' + want + ' +/- ' + tol)); };
+
+console.log('Qibla bearing (degrees clockwise from true north)');
+near('Hulu Langat (3.10, 101.80), computed by an independent run earlier', Q(3.10, 101.80), 292.54, 0.05);
+near('Kuala Lumpur (3.139, 101.687)', Q(3.139, 101.687), 292.54, 0.05);
+near('Kota Kinabalu (5.98, 116.07)', Q(5.98, 116.07), 290.62, 0.05);
+near('JAKIM publishes 291 deg 7 min 23 sec (291.12) for zone SGR01: ours differs by under 1.6 deg', Q(3.10, 101.80), 291.12, 1.6);
+near('London (51.5, -0.12): widely quoted about 119 deg', Q(51.5, -0.12), 119, 1.5);
+near('New York (40.71, -74.0): widely quoted about 58.5 deg', Q(40.71, -74.0), 58.5, 1.5);
+near('Sydney (-33.87, 151.2): widely quoted about 277.5 deg', Q(-33.87, 151.2), 277.5, 1.5);
+near('a point due south of Mecca (0, 39.8262) is due north', Q(0, 39.8262), 0, 0.01);
+console.log('Direction names (Bahasa Malaysia)');
+eq('0 -> Utara', dirName(0), 'Utara'); eq('359 -> Utara', dirName(359), 'Utara');
+eq('45 -> Timur Laut', dirName(45), 'Timur Laut'); eq('180 -> Selatan', dirName(180), 'Selatan');
+eq('292.6 -> Barat-Barat Laut', dirName(292.6), 'Barat–Barat Laut'); eq('270 -> Barat', dirName(270), 'Barat'); eq('315 -> Barat Laut', dirName(315), 'Barat Laut');
+console.log('Angles');
+eq('angDiff(10,350) = +20', angDiff(10, 350), 20); eq('angDiff(350,10) = -20', angDiff(350, 10), -20); eq('norm360(-90) = 270', norm360(-90), 270);
+console.log('Heading from sensor events');
+eq('Android absolute alpha 90 -> heading 270', H({ absolute: true, alpha: 90 }), 270);
+eq('Android absolute alpha 0 -> heading 0', H({ absolute: true, alpha: 0 }), 0);
+eq('iPhone webkitCompassHeading 123 -> 123', H({ webkitCompassHeading: 123 }), 123);
+eq('relative (non-absolute) reading is NOT a compass reading', H({ absolute: false, alpha: 5 }), null);
+eq('empty event -> null', H({}), null);
+console.log('Smoothing');
+eq('first reading is taken as is', S(null, 80, .25), 80);
+eq('wraps the short way: 359 -> 1 at k=0.5 gives 0', S(359, 1, .5), 0);
+eq('moves a quarter of the way: 0 -> 40 gives 10', S(0, 40, .25), 10);
+console.log(bad ? '\n' + bad + ' FAILED' : '\nALL PASSED'); process.exit(bad ? 1 : 0);

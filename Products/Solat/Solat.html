@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Solat Times</title>
+<meta property="og:title" content="Solat Times">
+<meta property="og:description" content="Jadual waktu solat, lokasi pilihan dan kiraan masa solat semasa.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="description" content="Waktu solat harian, solat semasa dan masa berbaki. Kaedah JAKIM Malaysia secara lalai.">
+<meta name="theme-color" content="#101418">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Solat Times">
+<meta name="application-name" content="Solat Times">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+:root{--bg:#101418;--bg2:#171d24;--card:#1b222b;--line:#2a333f;--fg:#eef2f5;--mut:#93a1af;--gold:#d8b45a;--gold2:#f0d58c;--green:#1d5a3f;--green2:#2a6a4c;--r:16px}
+*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(1200px 600px at 50% -10%,#1b232c,var(--bg));color:var(--fg);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+.wrap{max-width:480px;margin:0 auto;padding:calc(12px + env(safe-area-inset-top)) 16px 16px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.brand{font-family:Georgia,"Times New Roman",serif;color:var(--gold);font-size:13px;letter-spacing:.25em;text-transform:uppercase;margin:0 0 3px}
+.loc{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:13px}
+h1{font-size:18px;margin:3px 0 0;font-weight:600}
+#date-hijri{margin:1px 0 0;color:var(--mut);font-size:13px}
+.ico{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.actions{display:flex;gap:8px}
+.icon-btn{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);color:var(--fg);display:grid;place-items:center;cursor:pointer}
+.icon-btn .ico{width:26px;height:26px}
+[hidden]{display:none!important}
+.notice{margin:10px 0 0;padding:8px 12px;border-radius:10px;background:#3a2e10;color:var(--gold2);font-size:13px;display:flex;gap:10px;justify-content:space-between;align-items:center}
+.notice button{background:none;border:1px solid var(--gold);color:var(--gold2);border-radius:8px;padding:3px 10px;cursor:pointer}
+.hero{margin:10px 0;padding:14px 18px;border-radius:20px;background:linear-gradient(145deg,#1b5a3d,#0f3324);border:1px solid var(--green2);box-shadow:0 16px 32px -18px #000a}
+.hero-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.hero h2{margin:0;font-size:26px;font-family:Georgia,serif;font-weight:500}
+#hero-ar{font-size:25px;color:var(--gold2)}
+.hero hr{border:0;border-top:1px solid #ffffff22;margin:10px 0}
+.hero-foot{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:12px}.hero-foot .lbl{grid-column:1/-1}
+.lbl{color:#bfe0cf;font-size:11px;text-transform:uppercase;letter-spacing:.1em}
+.count{font-size:31px;font-variant-numeric:tabular-nums;font-weight:300;letter-spacing:.02em}
+.start{text-align:right}.start .v{font-size:16px;font-variant-numeric:tabular-nums;color:var(--gold2);font-weight:400;margin-top:0}
+.next{margin:6px 0 0;color:var(--gold2);font-size:13px}
+.list{list-style:none;padding:0;margin:0;border-radius:var(--r);background:var(--card);border:1px solid var(--line);overflow:hidden}
+.list li{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;border-top:1px solid var(--line)}
+.list li:first-child{border-top:0}
+.list li .n{display:flex;align-items:baseline;gap:8px}
+.list li .ar{color:var(--mut);font-size:17px}
+.list li .t{font-variant-numeric:tabular-nums;font-size:16px}
+.list li.minor{color:var(--mut)}
+.list li.now{background:var(--green);color:var(--fg)}
+.list li.now .ar{color:#bfe0cf}
+.list li.now .t{color:var(--gold2);font-weight:600}
+.panel{margin-top:12px;padding:12px 14px;border-radius:var(--r);background:var(--bg2);border:1px solid var(--line);display:grid;gap:8px}
+.prow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label.f{display:grid;gap:4px;font-size:12px;color:var(--mut)}
+select,input[type=text]{width:100%;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font-size:14px}
+.btn{padding:9px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font-size:14px;cursor:pointer;width:100%}
+.btn.primary{background:var(--gold);color:#1a1405;border-color:var(--gold);font-weight:600}
+.row{display:flex;gap:8px}
+footer{text-align:center;color:var(--mut);font-size:11px;margin-top:10px}
+#brand{margin-top:4px}
+details.help summary{cursor:pointer;color:var(--gold2);font-size:13px;margin:6px 0}
+details.help p{font-size:13px;color:var(--mut);margin:6px 0}
+/*menu*/
+.actions{position:relative}
+.menu{position:absolute;top:calc(100% + 8px);right:0;z-index:20;display:flex;flex-direction:column;gap:8px;padding:8px;background:var(--card);border:1px solid var(--line);border-radius:32px;box-shadow:0 14px 28px -12px #000c}
+#btn-menu[aria-expanded="true"]{border-color:var(--gold)}
+.dial{display:grid;place-items:center;margin:8px 0 4px}
+.dial svg{width:min(100%,280px);height:auto}
+.q-ring{fill:var(--bg2);stroke:var(--line);stroke-width:2}
+.q-tick{stroke:#3a4654;stroke-width:1.5}.q-tick.major{stroke:var(--mut);stroke-width:2.5}
+#q-dial text{font:600 17px system-ui,sans-serif;fill:var(--mut);text-anchor:middle}
+#q-dial text.n{fill:var(--gold2)}
+.q-line{stroke:var(--gold);stroke-width:5;stroke-linecap:round}
+.q-head{fill:var(--gold)}
+.q-hub{fill:var(--card);stroke:var(--gold);stroke-width:3}
+.q-kaaba{fill:#0b0d10;stroke:var(--gold);stroke-width:2}
+.q-band{fill:var(--gold)}
+.q-top{fill:var(--gold2)}
+#qibla.aligned .q-line,#qibla.aligned .q-hub,#qibla.aligned .q-kaaba{stroke:#6fdc9f}
+#qibla.aligned .q-head,#qibla.aligned .q-band{fill:#6fdc9f}
+.q-deg{font:600 44px/1.1 Georgia,serif;color:var(--gold2);text-align:center}
+.q-mid{text-align:center}
+.q-status{text-align:center;font-size:15px;color:var(--fg);margin:8px 0 2px;min-height:2.6em}
+.q-mode{display:flex;align-items:center;gap:8px;margin:6px auto 0;padding:5px 12px;border-radius:999px;font-size:13px;font-weight:600;border:1px solid var(--line);width:max-content;max-width:100%;color:var(--mut)}
+.q-mode::before{content:"";flex:none;width:9px;height:9px;border-radius:50%;background:var(--mut)}
+#qibla.mode-live .q-mode{color:#6fdc9f;border-color:#2f7a52}
+#qibla.mode-live .q-mode::before{background:#6fdc9f;animation:qpulse 1.4s ease-in-out infinite}
+#qibla.mode-static .q-mode{color:var(--gold2);border-color:#6b5a2a}
+#qibla.mode-static .q-mode::before{background:transparent;border:2px solid var(--gold2)}
+#qibla.mode-static .q-top,#qibla.mode-wait .q-top{display:none}
+#qibla.mode-static .q-ring{stroke-dasharray:6 6}
+@keyframes qpulse{50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){#qibla.mode-live .q-mode::before{animation:none}}
+/*/menu*/
+#dbg{font:11px/1.4 ui-monospace,monospace;color:var(--mut);white-space:pre-wrap;word-break:break-all;margin:8px 0 0;padding:8px;border:1px solid var(--line);border-radius:8px;text-align:left}
+dialog{border:1px solid var(--line);border-radius:22px;background:var(--bg2);color:var(--fg);max-width:560px;width:calc(100% - 32px);padding:20px;font-size:22.5px}
+dialog::backdrop{background:#000a}
+dialog h2{margin:0 0 12px;font-family:Georgia,serif;font-weight:500}
+dialog h3{margin:18px 0 8px;font-size:15px;color:var(--gold2)}
+/*dlg*/
+dialog h2{font-size:34px}
+dialog h3{font-size:22.5px}
+dialog .small,dialog details.help summary,dialog details.help p{font-size:19.5px}
+dialog label.f{font-size:18px}
+dialog select{font-size:21px;padding:12px 15px}
+dialog .btn{font-size:21px;padding:13px 21px}
+dialog .q-status{font-size:22.5px}
+dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
+.switch{width:69px;height:39px;border-radius:20px}
+.switch::after{top:4.5px;left:4.5px;width:30px;height:30px}
+.switch-row input:checked+.switch::after{left:34.5px}
+/*/dlg*/
+/*zoom*/
+html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/*/zoom*/
+.small{font-size:13px;color:var(--mut);margin:6px 0}
+.warn{color:var(--gold2)}
+.switch-row{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+.switch-row input{position:absolute;opacity:0}
+.switch{width:46px;height:26px;border-radius:13px;background:var(--line);position:relative;transition:.2s;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--fg);transition:.2s}
+.switch-row input:checked+.switch{background:var(--gold)}
+.switch-row input:checked+.switch::after{left:23px}
+.stopbar{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div>
+      <p class="brand">Solat Times</p>
+      <div class="loc">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="loc-name">Mencari lokasi…</span>
+      </div>
+      <h1 id="date-main"></h1>
+      <p id="date-hijri"></p>
+    </div>
+    <div class="actions">
+      <button id="btn-menu" class="icon-btn" type="button" aria-label="Menu" aria-haspopup="true" aria-expanded="false" aria-controls="menu">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div id="menu" class="menu" hidden>
+      <button id="btn-qibla" class="icon-btn" type="button" aria-label="Arah kiblat">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z"/></svg>
+      </button>
+      <button id="btn-settings" class="icon-btn" type="button" aria-label="Tetapan">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <button id="btn-refresh" class="icon-btn" type="button" aria-label="Kemas kini lokasi saya">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      </div>
+    </div>
+  </header>
+
+  <div id="notice" class="notice" hidden><span id="notice-text"></span><button id="notice-action" type="button" hidden></button></div>
+
+  <section class="hero">
+    <div class="hero-head"><h2 id="hero-name">&nbsp;</h2><span id="hero-ar" lang="ar" dir="rtl"></span></div>
+    <hr>
+    <div class="hero-foot">
+      <div id="hero-label" class="lbl">Berakhir dalam</div><div id="hero-count" class="count">--:--:--</div>
+      <div class="start"><div id="hero-start" class="v"></div></div>
+    </div>
+      </section>
+
+  <ul id="list" class="list"></ul>
+
+  <section class="panel">
+    <div class="prow">
+      <label class="f">Lokasi
+        <select id="city"></select>
+      </label>
+      <label class="f">Kaedah
+        <select id="method"></select>
+      </label>
+    </div>
+    <button id="btn-gps" class="btn" type="button">Kesan lokasi semasa</button>
+  </section>
+
+  <footer id="src">Solat Times</footer>
+  <footer id="brand">© 2026 Digitiska</footer>
+  <pre id="dbg" hidden></pre>
+</main>
+
+<dialog id="settings">
+  <h2>Tetapan</h2>
+  <h3 style="margin-top:0">Azan</h3>
+  <label class="switch-row" for="azan-toggle">
+    <span>Mainkan azan pada waktu solat</span>
+    <input id="azan-toggle" type="checkbox" role="switch"><span class="switch"></span>
+  </label>
+  <h3>Bunyi</h3>
+  <label class="f"><select id="sound">
+    <option value="azan">Azan (dalam talian)</option>
+    <option value="azan2">Azan Makkah (dalam talian)</option>
+    <option value="beep">Loceng lembut (tanpa internet)</option>
+    <option value="custom">Pilih dari telefon…</option>
+  </select></label>
+  <input id="file" type="file" accept="audio/*" hidden>
+  <p id="sound-status" class="small"></p>
+  <div class="row">
+    <button id="azan-test" class="btn" type="button">Uji bunyi</button>
+    <button id="azan-stop" class="btn" type="button">Henti</button>
+  </div>
+  <p class="small warn">Azan hanya berbunyi ketika aplikasi ini dibuka. Aplikasi web tidak boleh mengejutkan telefon yang ditutup atau dikunci.</p>
+  <h3>Notifikasi</h3>
+  <p id="notif-status" class="small"></p>
+  <div class="row">
+    <button id="notif-allow" class="btn" type="button" hidden>Benarkan notifikasi</button>
+    <button id="notif-test" class="btn" type="button" hidden>Uji notifikasi</button>
+  </div>
+  <h3>Zon JAKIM</h3>
+  <p id="zone-now" class="small"></p>
+  <details class="help">
+    <summary>Bagaimana pengumpulan zon berfungsi?</summary>
+    <p>JAKIM tidak mengeluarkan waktu solat untuk setiap lokasi. Negara dibahagikan kepada beberapa puluh zon (58 dalam senarai yang digunakan aplikasi ini), dan semua tempat dalam satu zon menggunakan waktu yang sama. Contohnya, Hulu Langat dan Shah Alam berada dalam zon SGR01.</p>
+    <p>Aplikasi mengenal pasti zon anda daripada lokasi, kemudian mengambil jadual zon itu terus dari e-solat.gov.my.</p>
+    <p>• Jika di bawah skrin tertulis “Jadual JAKIM e-Solat · Zon …”, waktu yang dipaparkan sama seperti jadual JAKIM untuk zon itu.</p>
+    <p>• Jika tertulis “Kiraan pada peranti”, zon belum dapat dikenal pasti atau jadual JAKIM tidak dapat dimuat. Waktu dikira mengikut kedudukan tepat anda, jadi boleh berbeza kira-kira 1–2 minit daripada waktu zon. Pilih daerah anda dalam senarai Lokasi untuk mendapatkan waktu JAKIM.</p>
+    <p>• Tempat dalam zon yang berlainan boleh mempunyai waktu yang berbeza.</p>
+    <p>Senarai zon dalam aplikasi ini bersumber daripada panduan komuniti (2020), bukan senarai rasmi JAKIM, dan mungkin telah berubah.</p>
+  </details>
+  <h3>Privasi</h3>
+  <p class="small">Tiada akaun, iklan atau analitik. Lokasi disimpan pada peranti. Jadual solat diambil terus dari e-solat.gov.my (JAKIM); hanya kod zon dihantar. Nama tempat dan carian menggunakan OpenStreetMap Nominatim (kedudukan dibulatkan kira-kira 1 km). Anggaran lokasi internet hanya berjalan jika anda tekan "Guna anggaran"; ketika itu alamat IP anda dihantar kepada perkhidmatan tersebut. Pelayan hos (Google Firebase Hosting) mungkin merekod lawatan seperti kebanyakan pelayan web.</p>
+  <h3>Keselamatan</h3>
+  <p class="small">Keselamatan: aplikasi ini ialah satu fail yang kodnya boleh dibaca. Ia tidak memuatkan skrip, fon, imej atau iklan daripada pihak ketiga, tiada alat analitik atau pengesan, dan tidak dipasang sebagai program pada telefon. Kod ini telah disemak untuk sambungan luar dan skrip tersembunyi; tiada spyware atau malware ditemui.</p>
+  <p class="small">Sambungan keluar hanya ke: e-solat.gov.my (jadual JAKIM), OpenStreetMap Nominatim (nama tempat), islamcan.com (bunyi azan, hanya apabila dimainkan) dan perkhidmatan anggaran lokasi internet (hanya jika anda tekan "Guna anggaran").</p>
+  <p class="small warn">Salinan yang dihantar semula oleh pihak lain mungkin telah diubah. Dapatkan aplikasi ini daripada pautan asal Digitiska sahaja: solat.digitiska.com</p>
+  <button id="settings-close" class="btn primary" type="button" style="margin-top:10px">Tutup</button>
+</dialog>
+
+<dialog id="qibla">
+  <h2>Arah Kiblat</h2>
+  <p id="q-place" class="small"></p>
+  <div id="q-mode" class="q-mode" aria-live="polite"></div>
+  <div class="q-mid" style="margin-top:12px"><button id="q-perm" class="btn primary" type="button" hidden>Aktifkan Kompas</button></div>
+  <div class="dial"><svg id="q-svg" viewBox="0 0 260 260" role="img" aria-label="Kompas kiblat">
+    <circle class="q-ring" cx="130" cy="130" r="120"/>
+    <g id="q-dial"><line class="q-tick major" x1="130.0" y1="34.0" x2="130.0" y2="20.0"/><line class="q-tick" x1="156.4" y1="31.5" x2="158.5" y2="23.7"/><line class="q-tick" x1="181.0" y1="41.7" x2="185.0" y2="34.7"/><line class="q-tick" x1="202.1" y1="57.9" x2="207.8" y2="52.2"/><line class="q-tick" x1="218.3" y1="79.0" x2="225.3" y2="75.0"/><line class="q-tick" x1="228.5" y1="103.6" x2="236.3" y2="101.5"/><line class="q-tick major" x1="226.0" y1="130.0" x2="240.0" y2="130.0"/><line class="q-tick" x1="228.5" y1="156.4" x2="236.3" y2="158.5"/><line class="q-tick" x1="218.3" y1="181.0" x2="225.3" y2="185.0"/><line class="q-tick" x1="202.1" y1="202.1" x2="207.8" y2="207.8"/><line class="q-tick" x1="181.0" y1="218.3" x2="185.0" y2="225.3"/><line class="q-tick" x1="156.4" y1="228.5" x2="158.5" y2="236.3"/><line class="q-tick major" x1="130.0" y1="226.0" x2="130.0" y2="240.0"/><line class="q-tick" x1="103.6" y1="228.5" x2="101.5" y2="236.3"/><line class="q-tick" x1="79.0" y1="218.3" x2="75.0" y2="225.3"/><line class="q-tick" x1="57.9" y1="202.1" x2="52.2" y2="207.8"/><line class="q-tick" x1="41.7" y1="181.0" x2="34.7" y2="185.0"/><line class="q-tick" x1="31.5" y1="156.4" x2="23.7" y2="158.5"/><line class="q-tick major" x1="34.0" y1="130.0" x2="20.0" y2="130.0"/><line class="q-tick" x1="31.5" y1="103.6" x2="23.7" y2="101.5"/><line class="q-tick" x1="41.7" y1="79.0" x2="34.7" y2="75.0"/><line class="q-tick" x1="57.9" y1="57.9" x2="52.2" y2="52.2"/><line class="q-tick" x1="79.0" y1="41.7" x2="75.0" y2="34.7"/><line class="q-tick" x1="103.6" y1="31.5" x2="101.5" y2="23.7"/><text class="n" x="130.0" y="56.0">U</text><text x="210.0" y="136.0">T</text><text x="130.0" y="216.0">S</text><text x="50.0" y="136.0">B</text>
+      <g id="q-arrow"><line class="q-line" x1="130" y1="130" x2="130" y2="58"/><polygon class="q-head" points="130,44 123,60 137,60"/>
+        <g transform="translate(130 28)"><rect class="q-kaaba" x="-11" y="-11" width="22" height="22" rx="3"/><rect class="q-band" x="-11" y="-5" width="22" height="4"/></g></g>
+    </g>
+    <circle class="q-hub" cx="130" cy="130" r="8"/>
+    <polygon class="q-top" points="130,2 124,14 136,14"/>
+  </svg></div>
+  <div class="q-mid"><div id="q-deg" class="q-deg"></div><div id="q-dir" class="small"></div><div id="q-turn" class="small"></div><div id="q-head" class="small"></div></div>
+  <p id="q-status" class="q-status" role="status"></p>
+  <h3>Cara guna</h3>
+  <p class="small">Letakkan telefon mendatar (rata) dan jauhkan daripada logam atau magnet. Putar sehingga anak panah emas dengan lambang Kaabah menghala ke atas; ketika itu anda menghadap kiblat.</p>
+  <p class="small">Jika bacaan tidak stabil, gerakkan telefon membentuk angka 8 untuk menentukur kompas. Kunci putaran skrin kepada menegak.</p>
+  <p class="small warn">Panduan sahaja. Sahkan dengan kompas yang telah ditentukur atau arah kiblat masjid berhampiran.</p>
+  <button id="q-close" class="btn primary" type="button" style="margin-top:10px">Tutup</button>
+</dialog>
+
+<button id="stopbar" class="btn primary stopbar" type="button" hidden style="width:auto">■ Henti azan</button>
+<audio id="azan" preload="none"></audio>
+
+<script>
+(()=>{"use strict";
+/* ---------- Prayer time calculation (PrayTimes-style) ---------- */
+const D2R=Math.PI/180,R2D=180/Math.PI;
+const sin=d=>Math.sin(d*D2R),cos=d=>Math.cos(d*D2R),tan=d=>Math.tan(d*D2R);
+const asin=x=>R2D*Math.asin(x),acos=x=>R2D*Math.acos(x),atan2=(y,x)=>R2D*Math.atan2(y,x),acot=x=>R2D*Math.atan(1/x);
+const fix=(a,b)=>{a=a-b*Math.floor(a/b);return a<0?a+b:a};
+
+const METHODS={
+  JAKIM:{name:"JAKIM (Malaysia)",fajr:18,isha:18,ihtiyat:2,ceil:1},
+  KEMENAG:{name:"KEMENAG (Indonesia)",fajr:20,isha:18,ihtiyat:2},
+  MUIS:{name:"MUIS (Singapura)",fajr:20,isha:18,ihtiyat:2},
+  MWL:{name:"Muslim World League",fajr:18,isha:17,ihtiyat:0},
+  ISNA:{name:"ISNA (Amerika Utara)",fajr:15,isha:15,ihtiyat:0},
+  EGYPT:{name:"Egyptian General Authority",fajr:19.5,isha:17.5,ihtiyat:0},
+  MAKKAH:{name:"Umm al-Qura (Makkah)",fajr:18.5,ishaMin:90,ihtiyat:0},
+  KARACHI:{name:"Univ. Islamic Sciences, Karachi",fajr:18,isha:18,ihtiyat:0},
+  TEHRAN:{name:"Institute of Geophysics, Tehran",fajr:17.7,isha:14,maghrib:4.5,ihtiyat:0}
+};
+
+function julian(y,m,d){if(m<=2){y-=1;m+=12}const A=Math.floor(y/100),B=2-A+Math.floor(A/4);return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5}
+function sunPos(jd){const D=jd-2451545,g=fix(357.529+.98560028*D,360),q=fix(280.459+.98564736*D,360),L=fix(q+1.915*sin(g)+.02*sin(2*g),360),e=23.439-.00000036*D;
+  const RA=atan2(cos(e)*sin(L),cos(L))/15,eqt=q/15-fix(RA,24),decl=asin(sin(e)*sin(L));return{decl,eqt}}
+
+function calc(date,lat,lng,methodKey){
+  const m=METHODS[methodKey]||METHODS.JAKIM;
+  const tz=-date.getTimezoneOffset()/60;
+  const jd=julian(date.getFullYear(),date.getMonth()+1,date.getDate())-lng/(15*24);
+  const mid=t=>{const e=sunPos(jd+t).eqt;return fix(12-e,24)};
+  const angT=(ang,t,ccw)=>{const d=sunPos(jd+t).decl,n=mid(t);const v=acos((-sin(ang)-sin(d)*sin(lat))/(cos(d)*cos(lat)))/15;return n+(ccw?-v:v)};
+  const asrT=(f,t)=>{const d=sunPos(jd+t).decl;return angT(-acot(f+tan(Math.abs(lat-d))),t)};
+  let t={fajr:5/24,sunrise:6/24,dhuhr:12/24,asr:13/24,sunset:18/24,isha:18/24};
+  for(let i=0;i<2;i++){const h=t;t={
+    fajr:angT(m.fajr,h.fajr,true),sunrise:angT(.833,h.sunrise,true),dhuhr:mid(h.dhuhr),
+    asr:asrT(1,h.asr),sunset:angT(.833,h.sunset),isha:m.isha?angT(m.isha,h.isha):0};
+    for(const k in t)t[k]/=24}
+  for(const k in t)t[k]*=24;
+  for(const k in t)t[k]+=tz-lng/15;
+  let maghrib=m.maghrib?null:t.sunset;
+  if(m.maghrib){const d=sunPos(jd+t.sunset/24).decl;maghrib=t.sunset+0; maghrib=angT(m.maghrib,t.sunset/24)+tz-lng/15}
+  let isha=m.ishaMin?maghrib+m.ishaMin/60:t.isha;
+  const ih=(m.ihtiyat||0)/60;
+  const out={subuh:t.fajr+ih,syuruk:t.sunrise-ih,zohor:t.dhuhr+ih+(methodKey==="JAKIM"||methodKey==="MUIS"||methodKey==="KEMENAG"?0:0),asar:t.asr+ih,maghrib:maghrib+ih,isyak:isha+ih};
+  out.imsak=out.subuh-10/60;
+  const base=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+  const res={};for(const k in out){const ms=(m.ceil?Math.ceil:Math.round)(out[k]*60)*60000;res[k]=new Date(base.getTime()+ms)}
+  return res;
+}
+
+/* ---------- Data ---------- */
+const PRAYERS=[
+  {k:"imsak",n:"Imsak",ar:"إمساك",minor:true},
+  {k:"subuh",n:"Subuh",ar:"الفجر"},
+  {k:"syuruk",n:"Syuruk",ar:"الشروق",minor:true},
+  {k:"zohor",n:"Zohor",ar:"الظهر"},
+  {k:"asar",n:"Asar",ar:"العصر"},
+  {k:"maghrib",n:"Maghrib",ar:"المغرب"},
+  {k:"isyak",n:"Isyak",ar:"العشاء"}
+];
+const CITIES=[
+  ["Kuala Lumpur",3.139,101.6869],["Putrajaya",2.9264,101.6964],["Shah Alam",3.0733,101.5185],["Petaling Jaya",3.1073,101.6067],
+  ["Johor Bahru",1.4927,103.7414],["Melaka",2.1896,102.2501],["Seremban",2.7297,101.9381],["Ipoh",4.5975,101.0901],
+  ["George Town",5.4141,100.3288],["Alor Setar",6.1248,100.3678],["Kangar",6.4414,100.1986],["Kota Bharu",6.1254,102.2381],
+  ["Kuala Terengganu",5.3302,103.1408],["Kuantan",3.8077,103.326],["Kuching",1.5535,110.3593],["Miri",4.3995,113.9914],
+  ["Sibu",2.2873,111.8305],["Kota Kinabalu",5.9804,116.0735],["Sandakan",5.8402,118.1179],["Tawau",4.2448,117.8912],
+  ["Labuan",5.2831,115.2308],["Singapura",1.3521,103.8198],["Jakarta",-6.2088,106.8456],["Bandar Seri Begawan",4.9031,114.9398],
+  ["Makkah",21.3891,39.8579],["Madinah",24.5247,39.5692]
+];
+// District coverage based on JAKIM e-Solat; coordinates resolved by OpenStreetMap, not official zone timetables.
+const DISTRICTS={"Johor":["Pulau Aur","Pulau Pemanggil","Johor Bahru","Kota Tinggi","Mersing","Kulai","Kluang","Pontian","Batu Pahat","Muar","Segamat","Gemas Johor","Tangkak"],"Kedah":["Kota Setar","Kubang Pasu","Pokok Sena","Kuala Muda","Yan","Pendang","Padang Terap","Sik","Baling","Bandar Baharu","Kulim","Langkawi","Puncak Gunung Jerai","Alor Setar"],"Kelantan":["Bachok","Kota Bharu","Machang","Pasir Mas","Pasir Puteh","Tanah Merah","Tumpat","Kuala Krai","Mukim Chiku","Gua Musang","Jeli","Lojing"],"Melaka":["Melaka","Melaka Tengah","Alor Gajah","Jasin"],"Negeri Sembilan":["Tampin","Jempol","Jelebu","Kuala Pilah","Rembau","Port Dickson","Seremban"],"Pahang":["Pulau Tioman","Kuantan","Pekan","Muadzam Shah","Jerantut","Temerloh","Maran","Bera","Chenor","Jengka","Bentong","Lipis","Raub","Genting Sempah","Janda Baik","Bukit Tinggi","Cameron Highlands","Genting Highlands","Bukit Fraser","Rompin","Endau"],"Perak":["Tapah","Slim River","Tanjung Malim","Kuala Kangsar","Sungai Siput","Ipoh","Batu Gajah","Kampar","Lenggong","Pengkalan Hulu","Gerik","Temengor","Belum","Kampung Gajah","Teluk Intan","Bagan Datuk","Seri Iskandar","Beruas","Parit","Lumut","Sitiawan","Pulau Pangkor","Selama","Taiping","Bagan Serai","Parit Buntar","Bukit Larut"],"Perlis":["Kangar","Padang Besar","Arau"],"Pulau Pinang":["George Town","Seberang Perai Utara","Seberang Perai Tengah","Seberang Perai Selatan","Timur Laut","Barat Daya","Butterworth","Bukit Mertajam","Balik Pulau"],"Sabah":["Sandakan","Bukit Garam","Semawang","Temanggong","Tambisan","Sukau","Beluran","Telupid","Pinangah","Terusan","Kuamut","Lahad Datu","Silabukan","Kunak","Sahabat","Semporna","Tungku","Tawau","Balong","Merotai","Kalabakan","Kudat","Kota Marudu","Pitas","Pulau Banggi","Gunung Kinabalu","Kota Kinabalu","Ranau","Kota Belud","Tuaran","Penampang","Papar","Putatan","Pensiangan","Keningau","Tambunan","Nabawan","Sipitang","Membakut","Beaufort","Kuala Penyu","Weston","Tenom","Long Pasia"],"Sarawak":["Limbang","Lawas","Sundar","Terusan","Miri","Niah","Beluru","Sibuti","Marudi","Bintulu","Tatau","Nyalau","Sebauh","Sibu","Mukah","Dalat","Song","Kanowit","Kapit","Belaga","Sarikei","Matu","Julau","Rajang","Daro","Bintangor","Belawai","Sri Aman","Kabong","Lingga","Engkilili","Betong","Spaoh","Pusa","Saratok","Roban","Debak","Samarahan","Simunjan","Serian","Sebuyau","Meludam","Kuching","Bau","Lundu","Sematan","Kampung Patarikan"],"Selangor":["Gombak","Petaling","Sepang","Hulu Langat","Hulu Selangor","Shah Alam","Kuala Selangor","Sabak Bernam","Klang","Kuala Langat","Petaling Jaya"],"Terengganu":["Kuala Terengganu","Marang","Kuala Nerus","Besut","Setiu","Hulu Terengganu","Kemaman","Dungun"],"Wilayah Persekutuan":["Kuala Lumpur","Putrajaya","Labuan"]};
+const HIJRI_MS=["Muharram","Safar","Rabiulawal","Rabiulakhir","Jamadilawal","Jamadilakhir","Rejab","Syaaban","Ramadan","Syawal","Zulkaedah","Zulhijjah"];
+
+/* ---------- State ---------- */
+const LS=k=>{try{return JSON.parse(localStorage.getItem("solat."+k))}catch{return null}};
+const SS=(k,v)=>{try{localStorage.setItem("solat."+k,JSON.stringify(v))}catch{}};
+let st={loc:LS("loc")||{name:"Kuala Lumpur",lat:3.139,lng:101.6869,city:"Kuala Lumpur"},method:LS("method")||"JAKIM",azan:LS("azan")??true,sound:LS("sound")||"azan"};
+let lastFired=LS("fired")||"";
+
+const $=id=>document.getElementById(id);
+const fmt=d=>pad(d.getHours())+":"+pad(d.getMinutes());
+const pad=n=>String(n).padStart(2,"0");
+const dur=ms=>{const s=Math.max(0,Math.floor(ms/1000));return pad(Math.floor(s/3600))+":"+pad(Math.floor(s%3600/60))+":"+pad(s%60)};
+
+/* ---------- UI setup ---------- */
+const citySel=$("city");
+citySel.innerHTML='<option value="__gps">📍 Lokasi semasa</option><option value="__search">🔎 Cari bandar / poskod…</option>';
+for(const [state,names] of Object.entries(DISTRICTS)){
+  const group=document.createElement("optgroup");group.label=state;
+  for(const name of names){const option=document.createElement("option");option.textContent=name;option.value=CITIES.some(c=>c[0]===name)?name:"district:"+state+":"+name;group.append(option)}citySel.append(group);
+}
+const abroad=document.createElement("optgroup");abroad.label="Luar Malaysia";
+for(const c of CITIES.slice(-5)){const option=document.createElement("option");option.value=c[0];option.textContent=c[0];abroad.append(option)}citySel.append(abroad);
+const methSel=$("method");
+methSel.innerHTML=Object.entries(METHODS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join("");
+methSel.value=st.method;
+citySel.value=st.loc.city||"__gps";
+citySel.onchange=()=>{if(citySel.value==="__gps"){locate();return}if(citySel.value==="__search"){searchTown();return}if(citySel.value.startsWith("district:")){const [,state,name]=citySel.value.split(":");findTown(name,state);return}
+  const c=CITIES.find(c=>c[0]===citySel.value);if(!c)return;locationRequest++;st.loc={name:c[0],lat:c[1],lng:c[2],city:c[0],source:"manual",zone:zoneByName(c[0],"")};SS("loc",st.loc);notice("");render(true)};
+methSel.onchange=()=>{st.method=methSel.value;SS("method",st.method);render(true)};
+
+function notice(t,actLabel,act){$("notice").hidden=!t;$("notice-text").textContent=t||"";const b=$("notice-action");b.hidden=!actLabel;b.textContent=actLabel||"";b.onclick=act||null}
+
+/* Place names: never show a local council (e.g. "Majlis Perbandaran Kajang"); prefer the district (e.g. Hulu Langat). */
+const COUNCIL=/\bcouncil\b|^(majlis|dewan bandaraya|perbadanan)\b|\b(bandaraya|perbandaran)\b/i;
+const goodName=n=>{n=String(n||"").replace(/^(daerah|mukim)\s+/i,"").replace(/\s+(district|daerah)$/i,"").trim();return n&&!COUNCIL.test(n)?n:""};
+const pickName=a=>{for(const k of ["county","state_district","suburb","city_district","village","town","city","municipality","state"]){const v=goodName(a[k]);if(v)return v}return ""};
+/* Positions sent to outside services are rounded to 2 decimals (about 1 km). */
+const r2=x=>Math.round(x*100)/100;
+/*<jakim-pure>*/
+/* JAKIM zones (58). Source: community guide github.com/acfatah/jakim-esolat-api (MIT), last updated 30.May.2020. Not an official list. */
+const ZONES=[["JHR01","Johor",["Pulau Aur","Pulau Pemanggil"]],["JHR02","Johor",["Johor Bahru","Kota Tinggi","Mersing"]],["JHR03","Johor",["Kluang","Pontian"]],["JHR04","Johor",["Batu Pahat","Muar","Segamat","Gemas Johor"]],["KDH01","Kedah",["Kota Setar","Kubang Pasu","Pokok Sena (Daerah Kecil)"]],["KDH02","Kedah",["Kuala Muda","Yan","Pendang"]],["KDH03","Kedah",["Padang Terap","Sik"]],["KDH04","Kedah",["Baling"]],["KDH05","Kedah",["Bandar Baharu","Kulim"]],["KDH06","Kedah",["Langkawi"]],["KDH07","Kedah",["Puncak Gunung Jerai"]],["KTN01","Kelantan",["Bachok","Kota Bharu","Machang","Pasir Mas","Pasir Puteh","Tanah Merah","Tumpat","Kuala Krai","Mukim Chiku"]],["KTN03","Kelantan",["Gua Musang (Daerah Galas Dan Bertam)","Jeli"]],["MLK01","Melaka",["Melaka"]],["NGS01","Negeri Sembilan",["Tampin","Jempol"]],["NGS02","Negeri Sembilan",["Jelebu","Kuala Pilah","Port Dickson","Rembau","Seremban"]],["PHG01","Pahang",["Pulau Tioman"]],["PHG02","Pahang",["Kuantan","Pekan","Rompin","Muadzam Shah"]],["PHG03","Pahang",["Jerantut","Temerloh","Maran","Bera","Chenor","Jengka"]],["PHG04","Pahang",["Bentong","Lipis","Raub"]],["PHG05","Pahang",["Genting Sempah","Janda Baik","Bukit Tinggi"]],["PHG06","Pahang",["Cameron Highlands","Genting Higlands","Bukit Fraser"]],["PLS01","Perlis",["Kangar","Padang Besar","Arau"]],["PNG01","Pulau Pinang",["Pulau Pinang"]],["PRK01","Perak",["Tapah","Slim River","Tanjung Malim"]],["PRK02","Perak",["Kuala Kangsar","Sg. Siput (Daerah Kecil)","Ipoh","Batu Gajah","Kampar"]],["PRK03","Perak",["Lenggong","Pengkalan Hulu","Grik"]],["PRK04","Perak",["Temengor","Belum"]],["PRK05","Perak",["Kg Gajah","Teluk Intan","Bagan Datuk","Seri Iskandar","Beruas","Parit","Lumut","Sitiawan","Pulau Pangkor"]],["PRK06","Perak",["Selama","Taiping","Bagan Serai","Parit Buntar"]],["PRK07","Perak",["Bukit Larut"]],["SBH01","Sabah",["Bahagian Sandakan (Timur)","Bukit Garam","Semawang","Temanggong","Tambisan","Bandar Sandakan","Sukau"]],["SBH02","Sabah",["Beluran","Telupid","Pinangah","Terusan","Kuamut","Bahagian Sandakan (Barat)"]],["SBH03","Sabah",["Lahad Datu","Silabukan","Kunak","Sahabat","Semporna","Tungku","Bahagian Tawau (Timur)"]],["SBH04","Sabah",["Bandar Tawau","Balong","Merotai","Kalabakan","Bahagian Tawau (Barat)"]],["SBH05","Sabah",["Kudat","Kota Marudu","Pitas","Pulau Banggi","Bahagian Kudat"]],["SBH06","Sabah",["Gunung Kinabalu"]],["SBH07","Sabah",["Kota Kinabalu","Ranau","Kota Belud","Tuaran","Penampang","Papar","Putatan","Bahagian Pantai Barat"]],["SBH08","Sabah",["Pensiangan","Keningau","Tambunan","Nabawan","Bahagian Pendalaman (Atas)"]],["SBH09","Sabah",["Beaufort","Kuala Penyu","Sipitang","Tenom","Long Pa Sia","Membakut","Weston","Bahagian Pendalaman (Bawah)"]],["SGR01","Selangor",["Gombak","Petaling","Sepang","Hulu Langat","Hulu Selangor","Shah Alam"]],["SGR02","Selangor",["Kuala Selangor","Sabak Bernam"]],["SGR03","Selangor",["Klang","Kuala Langat"]],["SWK01","Sarawak",["Limbang","Lawas","Sundar","Trusan"]],["SWK02","Sarawak",["Miri","Niah","Bekenu","Sibuti","Marudi"]],["SWK03","Sarawak",["Pandan","Belaga","Suai","Tatau","Sebauh","Bintulu"]],["SWK04","Sarawak",["Sibu","Mukah","Dalat","Song","Igan","Oya","Balingian","Kanowit","Kapit"]],["SWK05","Sarawak",["Sarikei","Matu","Julau","Rajang","Daro","Bintangor","Belawai"]],["SWK06","Sarawak",["Lubok Antu","Sri Aman","Roban","Debak","Kabong","Lingga","Engkelili","Betong","Spaoh","Pusa","Saratok"]],["SWK07","Sarawak",["Serian","Simunjan","Samarahan","Sebuyau","Meludam"]],["SWK08","Sarawak",["Kuching","Bau","Lundu","Sematan"]],["SWK09","Sarawak",["Zon Khas (Kampung Patarikan)"]],["TRG01","Terengganu",["Kuala Terengganu","Marang","Kuala Nerus"]],["TRG02","Terengganu",["Besut","Setiu"]],["TRG03","Terengganu",["Hulu Terengganu"]],["TRG04","Terengganu",["Dungun","Kemaman"]],["WLY01","Wilayah Persekutuan",["Kuala Lumpur","Putrajaya"]],["WLY02","Wilayah Persekutuan",["Labuan"]]];
+const ALIAS={"petaling jaya":"petaling","alor setar":"kota setar","genting highlands":"genting higlands","gerik":"grik","sungai siput":"sg siput","kampung gajah":"kg gajah","long pasia":"long pa sia","engkilili":"engkelili","kampung patarikan":"zon khas (kampung patarikan)","sandakan":"bandar sandakan","tawau":"bandar tawau","george town":"pulau pinang"};
+const zNorm=n=>{n=goodName(n);if(!n)return "";n=n.toLowerCase().replace(/\((daerah[^)]*)\)/g," ").replace(/^(daerah|mukim|bahagian|wilayah persekutuan)\s+/,"").replace(/[.,]/g," ").replace(/\s+/g," ").trim();return ALIAS[n]||n};
+const ZIDX={},ZBYNAME={};
+for(const [code,state,areas] of ZONES)for(const a of areas){const k=zNorm(a);ZIDX[state+"|"+k]=code;(ZBYNAME[k]=ZBYNAME[k]||new Set()).add(code)}
+const ZSTATES=[...new Set(ZONES.map(z=>z[1]))];
+const WHOLE={};for(const st of ZSTATES){const zs=ZONES.filter(z=>z[1]===st);if(zs.length===1)WHOLE[st]=zs[0][0]}
+const zState=s=>{s=String(s||"").toLowerCase();if(!s)return "";if(/kuala lumpur|putrajaya|labuan|wilayah/.test(s))return "Wilayah Persekutuan";if(/penang|pinang/.test(s))return "Pulau Pinang";if(/malacca|melaka/.test(s))return "Melaka";return ZSTATES.find(x=>x.toLowerCase()===s)||""};
+const zoneByName=(name,state)=>{const k=zNorm(name);if(!k)return null;if(state)return ZIDX[state+"|"+k]||null;const set=ZBYNAME[k];return set&&set.size===1?[...set][0]:null};
+const ZSKIP=/^(country|country_code|postcode|house_number|road|state|ISO3166-2-lvl\d+)$/i;
+function zoneFromAddress(a){a=a||{};const st=a.state?zState(a.state):"";if(a.state&&!st)return null;
+  const first=[a.county,a.state_district,a.district,a.city_district,a.city,a.town,a.municipality,a.village,a.suburb];
+  const rest=Object.keys(a).filter(k=>!ZSKIP.test(k)).map(k=>a[k]);
+  for(const c of first.concat(rest,[a.state])){const z=zoneByName(c,st);if(z)return z}
+  return st&&WHOLE[st]||null}
+const JK_MON={jan:1,feb:2,mac:3,mar:3,apr:4,mei:5,may:5,jun:6,jul:7,ogo:8,ogs:8,aug:8,sep:9,okt:10,oct:10,nov:11,dis:12,dec:12};
+const jkMin=s=>{const m=/^(\d{1,2}):(\d{2})/.exec(String(s||""));if(!m)return NaN;const h=+m[1],n=+m[2];return h<24&&n<60?h*60+n:NaN};
+/* JAKIM answer -> {"YYYY-MM-DD":[imsak,subuh,syuruk,zohor,asar,maghrib,isyak] in minutes after midnight}; throws if it is not what we expect */
+function jkParse(j,zone){
+  if(!j||!/^ok/i.test(String(j.status||""))||!Array.isArray(j.prayerTime)||String(j.zone||"").toUpperCase()!==zone)throw new Error("unexpected JAKIM answer");
+  const days={};
+  for(const p of j.prayerTime){const m=/^(\d{1,2})-([A-Za-z]{3})[A-Za-z]*-(\d{4})$/.exec(String(p&&p.date||""));if(!m)continue;const mo=JK_MON[m[2].toLowerCase()];if(!mo)continue;
+    const t=[p.imsak,p.fajr,p.syuruk,p.dhuhr,p.asr,p.maghrib,p.isha].map(jkMin);
+    if(t.some(x=>!(x>=0))||t.some((x,i)=>i>0&&x<=t[i-1]))continue;
+    days[m[3]+"-"+("0"+mo).slice(-2)+"-"+("0"+m[1]).slice(-2)]=t}
+  if(!Object.keys(days).length)throw new Error("no usable days");return days}
+/*</jakim-pure>*/
+/*<qibla-pure>*/
+/* Qibla: great-circle bearing to the Kaaba (21.4225 N, 39.8262 E), degrees clockwise from true north */
+const KAABA={lat:21.4225,lng:39.8262};
+const norm360=a=>((a%360)+360)%360;
+const angDiff=(a,b)=>{const d=norm360(a-b);return d>180?d-360:d};
+function qiblaBearing(lat,lng){const r=Math.PI/180,k=KAABA.lat*r,g=KAABA.lng*r,p=lat*r,dl=g-lng*r;
+  return norm360(Math.atan2(Math.sin(dl),Math.cos(p)*Math.tan(k)-Math.sin(p)*Math.cos(dl))*180/Math.PI)}
+const DIR16=["Utara","Utara–Timur Laut","Timur Laut","Timur–Timur Laut","Timur","Timur–Tenggara","Tenggara","Selatan–Tenggara","Selatan","Selatan–Barat Daya","Barat Daya","Barat–Barat Daya","Barat","Barat–Barat Laut","Barat Laut","Utara–Barat Laut"];
+const dirName=b=>DIR16[Math.round(norm360(b)/22.5)%16];
+/* heading of the top edge of a phone held flat; Android gives an absolute alpha, iPhone gives webkitCompassHeading; anything else is not a compass reading */
+function headingFromEvent(e){if(typeof e.webkitCompassHeading==="number")return norm360(e.webkitCompassHeading);
+  if(e.absolute===true&&typeof e.alpha==="number")return norm360(360-e.alpha);return null}
+const smoothHeading=(prev,next,k)=>prev==null?next:norm360(prev+angDiff(next,prev)*k);
+/*</qibla-pure>*/
+if(st.loc&&!st.loc.zone){const p=String(st.loc.name||"").split(", ");st.loc.zone=(st.loc.city&&zoneByName(st.loc.city,""))||(p.length>1&&zoneByName(p[0],zState(p[1])))||null}
+let locationRequest=0;
+async function fetchJSON(url){
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),7000);
+  try{const r=await fetch(url,{signal:controller.signal});if(!r.ok)throw new Error("Network");return await r.json()}finally{clearTimeout(timer)}
+}
+function validCoordinates(lat,lng){return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180}
+const dbg={};
+const nomReverse=(zoom,lat,lng)=>fetchJSON(`https://nominatim.openstreetmap.org/reverse?format=json&zoom=${zoom}&accept-language=ms&lat=${r2(lat).toFixed(2)}&lon=${r2(lng).toFixed(2)}`);
+/* If the first lookup gave no JAKIM zone, ask again at district level (zoom 8, then 10), one request per 1.1 s as the service asks */
+async function refineZone(place,request){
+  for(const z of [8,10]){
+    if(place.zone||request!==locationRequest)return;
+    try{await new Promise(r=>setTimeout(r,1100));if(request!==locationRequest)return;
+      const j=await nomReverse(z,place.lat,place.lng);dbg["zoom"+z]=j.address||{};
+      const zn=zoneFromAddress(j.address);if(zn){place.zone=zn;dbg.zone=zn;st.loc=place;SS("loc",place);render(true);return}}catch{}}
+}
+async function setPlace(lat,lng,name,source,request,zone){
+  if(request!==locationRequest||!validCoordinates(lat,lng))return false;
+  const place={name:name||`${lat.toFixed(3)}, ${lng.toFixed(3)}`,lat,lng,city:null,source,zone:zone||null};
+  st.loc=place;citySel.value="__gps";render(true);
+  if(!name||(!place.zone&&inMY(place))){try{const j=await nomReverse(12,lat,lng);
+    const a=j.address||{};dbg.zoom12=a;if(!name){const nm=pickName(a);if(nm)place.name=nm+(a.state&&a.state!==nm?", "+a.state:"")}
+    if(!place.zone)place.zone=zoneFromAddress(a)}catch{}}
+  if(request!==locationRequest)return false;
+  dbg.lat=r2(lat);dbg.lng=r2(lng);dbg.zone=place.zone;
+  st.loc=place;SS("loc",place);render(true);
+  if(!place.zone&&inMY(place))refineZone(place,request);
+  return true;
+}
+async function ipLocate(request){
+  const srcs=[["https://ipwho.is/",j=>j.success!==false&&[+j.latitude,+j.longitude,goodName(j.city)&&(goodName(j.city)+(j.region?", "+j.region:""))]],
+    ["https://ipapi.co/json/",j=>!j.error&&[+j.latitude,+j.longitude,goodName(j.city)&&(goodName(j.city)+(j.region?", "+j.region:""))]],
+    ["https://get.geojs.io/v1/ip/geo.json",j=>[+j.latitude,+j.longitude,goodName(j.city)&&(goodName(j.city)+(j.region?", "+j.region:""))]]];
+  for(const [u,f] of srcs){if(request!==locationRequest)return false;try{const v=f(await fetchJSON(u));if(v&&validCoordinates(v[0],v[1])&&await setPlace(v[0],v[1],v[2],"ip",request))return true}catch{}}
+  return false;
+}
+async function findTown(q,state){
+  const request=++locationRequest;$("loc-name").textContent="Mencari…";
+  try{const query=state?q+", "+state+", Malaysia":q;
+    const j=await fetchJSON(`https://nominatim.openstreetmap.org/search?format=json&limit=1&addressdetails=1&accept-language=ms&countrycodes=${state?"my":"my,sg,bn,id"}&q=${encodeURIComponent(query)}`);
+    if(request!==locationRequest)return;
+    if(j[0]){const a=j[0].address||{};const nm=goodName(a.town)||goodName(a.city)||goodName(a.village)||goodName(a.suburb)||goodName(a.county)||q;
+      if(await setPlace(+j[0].lat,+j[0].lon,nm+(a.state&&a.state!==nm?", "+a.state:""),"manual",request,(state&&zoneByName(q,zState(state)))||zoneFromAddress(a))){notice("");return}}
+  }catch{}
+  if(request!==locationRequest)return;
+  notice("Tempat tidak dijumpai. Semak internet atau cuba nama lain.","Cari",searchTown);$("loc-name").textContent=st.loc.name;citySel.value=st.loc.city||"__gps";
+}
+function searchTown(){
+  const q=prompt("Nama bandar, pekan atau poskod:");
+  if(!q||!q.trim()){citySel.value=st.loc.city||"__gps";return}
+  findTown(q.trim());
+}
+const IP_NOTE="Lokasi anggaran internet — mungkin berbeza. Pilih bandar untuk ketepatan.";
+const MSG_DENIED="Lokasi tidak dibenarkan. Dalam tetapan pelayar, benarkan Lokasi untuk laman ini, kemudian tekan ↻. Atau pilih bandar anda.";
+const MSG_UNAVAIL="Lokasi tidak dapat dikesan. Hidupkan Lokasi pada telefon dan tekan ↻, atau pilih bandar anda.";
+const MSG_INSECURE="Pelayar tidak membenarkan lokasi untuk fail ini (perlu dibuka melalui HTTPS). Pilih bandar anda.";
+function showFail(request,msg){
+  if(request!==locationRequest)return;
+  $("loc-name").textContent=st.loc.name;citySel.value=st.loc.city||"__gps";
+  if(st.loc.source==="ip")notice(IP_NOTE,"Cari",searchTown);
+  else notice(msg+" Jadual guna "+st.loc.name+".","Guna anggaran",approxLocate);
+}
+async function approxLocate(){
+  const request=++locationRequest;$("loc-name").textContent="Mencari lokasi…";notice("");
+  if(await ipLocate(request)){notice(IP_NOTE,"Cari",searchTown)}
+  else if(request===locationRequest){$("loc-name").textContent=st.loc.name;citySel.value=st.loc.city||"__gps";notice("Anggaran lokasi gagal. Pilih bandar anda dalam senarai Lokasi.","Cari",searchTown)}
+}
+function locate(){
+  const request=++locationRequest;$("loc-name").textContent="Mencari lokasi…";notice("");
+  if(!navigator.geolocation||!window.isSecureContext){showFail(request,MSG_INSECURE);return}
+  const ok=async p=>{
+    if(request!==locationRequest)return;
+    if(await setPlace(p.coords.latitude,p.coords.longitude,null,"gps",request))notice("");else showFail(request,MSG_UNAVAIL);
+  };
+  /* 1st try: network/Wi-Fi position (fast, low battery). 2nd try only on timeout/unavailable: GPS chip. Denied is final. */
+  navigator.geolocation.getCurrentPosition(ok,e=>{
+    if(request!==locationRequest)return;
+    if(e&&e.code===1){showFail(request,MSG_DENIED);return}
+    navigator.geolocation.getCurrentPosition(ok,e2=>showFail(request,e2&&e2.code===1?MSG_DENIED:MSG_UNAVAIL),{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+  },{enableHighAccuracy:false,timeout:15000,maximumAge:300000});
+}
+$("btn-refresh").onclick=locate;$("btn-gps").onclick=locate;
+
+/* ---------- Render ---------- */
+let today=null,tomorrow=null,dayKey="";
+/* ---------- JAKIM e-Solat timetable, read directly from www.e-solat.gov.my (no third party) ---------- */
+const JAKIM="https://www.e-solat.gov.my/index.php?r=esolatApi/takwimsolat&zone=";
+let zone=null,jkYear=true;const jk={};
+function inMY(l){return l.lat>0.8&&l.lat<7.5&&l.lng>99.5&&l.lng<119.5}
+const dkey=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+function jkEntry(z){if(!jk[z]){const c=LS("jk."+z)||{};jk[z]={t:c.t||0,days:c.days||{},busy:false,tried:0}}return jk[z]}
+async function jkGet(z,period){const c=new AbortController(),tm=setTimeout(()=>c.abort(),12000);
+  try{const r=await fetch(JAKIM+z+"&period="+period,{signal:c.signal,credentials:"omit"});if(!r.ok)throw new Error("HTTP "+r.status);return jkParse(await r.json(),z)}finally{clearTimeout(tm)}}
+/* whole year first (one request); if JAKIM refuses that, the current month */
+async function jkFetch(z){const e=jkEntry(z);if(e.busy||Date.now()-e.tried<10*60000)return;e.busy=true;e.tried=Date.now();
+  try{let days;if(jkYear){try{days=await jkGet(z,"year")}catch{jkYear=false}}if(!days)days=await jkGet(z,"month");
+    const keep=dkey(new Date(Date.now()-45*864e5)),merged={};
+    for(const k of Object.keys(e.days).concat(Object.keys(days)).sort())if(k>=keep)merged[k]=days[k]||e.days[k];
+    e.days=merged;e.t=Date.now();SS("jk."+z,{t:e.t,days:merged});render(true)}
+  catch{}finally{e.busy=false}}
+function jkEnsure(){const l=st.loc;zone=null;if(st.method!=="JAKIM"||!inMY(l)||!l.zone)return;zone=l.zone;
+  const e=jkEntry(zone),n=new Date(),t=new Date(n);t.setDate(t.getDate()+1);
+  if(!e.days[dkey(n)]||!e.days[dkey(t)]||Date.now()-e.t>7*864e5)jkFetch(zone)}
+/* JAKIM times are Malaysia time (UTC+8); a day is used only if every time is within 20 min of our own calculation (guards against wrong or garbled data) */
+function offFor(d){if(!zone)return null;const day=jkEntry(zone).days[dkey(d)];if(!day)return null;
+  const at=min=>new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())+(min-480)*60000);
+  const r={imsak:at(day[0]),subuh:at(day[1]),syuruk:at(day[2]),zohor:at(day[3]),asar:at(day[4]),maghrib:at(day[5]),isyak:at(day[6])};
+  const c=calc(d,st.loc.lat,st.loc.lng,st.method);for(const k in r)if(!(Math.abs(r[k]-c[k])<=20*60000))return null;return r}
+function timesFor(d){return offFor(d)||calc(d,st.loc.lat,st.loc.lng,st.method)}
+function compute(){const n=new Date();jkEnsure();dayKey=n.toDateString()+st.method+st.loc.lat+st.loc.lng;
+  const isOff=!!offFor(n);today=timesFor(n);const t=new Date(n);t.setDate(t.getDate()+1);tomorrow=timesFor(t);
+  const y=new Date(n);y.setDate(y.getDate()-1);today._yIsyak=timesFor(y).isyak;
+  const f=document.getElementById("src");if(f)f.textContent="Solat Times · "+(isOff?"Jadual JAKIM e-Solat · Zon "+zone:(st.method==="JAKIM"&&inMY(st.loc)&&!st.loc.zone?"Kiraan pada peranti (±1 minit) · pilih daerah untuk jadual JAKIM":"Kiraan pada peranti (anggaran ±1 minit)"));}
+
+function render(force){
+  const now=new Date();
+  if(force||!today||dayKey!==now.toDateString()+st.method+st.loc.lat+st.loc.lng){compute();buildList();
+    $("loc-name").textContent=st.loc.name;
+    $("date-main").textContent=now.toLocaleDateString("ms-MY",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+    try{const p=new Intl.DateTimeFormat("en-u-ca-islamic-umalqura",{day:"numeric",month:"numeric",year:"numeric"}).formatToParts(now);
+      const g=t=>+p.find(x=>x.type===t).value;$("date-hijri").textContent=`${g("day")} ${HIJRI_MS[g("month")-1]} ${g("year")} H`}catch{$("date-hijri").textContent=""}
+  }
+  // Determine current prayer
+  const seq=[["isyak",today._yIsyak],["subuh",today.subuh],["syuruk",today.syuruk],["zohor",today.zohor],["asar",today.asar],["maghrib",today.maghrib],["isyak",today.isyak],["subuh",tomorrow.subuh]];
+  let i=0;for(let j=0;j<seq.length-1;j++)if(now>=seq[j][1])i=j;
+  let [ck,cs]=seq[i];let [nk,ne]=seq[i+1];
+  const P=k=>PRAYERS.find(p=>p.k===k);
+  if(ck==="syuruk"){ // no prayer between syuruk and zohor
+    $("hero-name").textContent="Dhuha";$("hero-ar").textContent="الضحى";$("hero-label").textContent="Zohor dalam";
+    $("hero-start").textContent=fmt(cs);
+  }else{
+    $("hero-name").textContent=P(ck).n;$("hero-ar").textContent=P(ck).ar;$("hero-label").textContent="Berakhir dalam";
+    $("hero-start").textContent=fmt(today[ck]);
+  }
+  $("hero-count").textContent=dur(ne-now);
+  if(matchMedia("(hover:hover) and (pointer:fine)").matches)document.title=`${ck==="syuruk"?"Zohor":P(ck).n} ${dur(ne-now)} · Solat Times`;
+  document.querySelectorAll("#list li").forEach(li=>li.classList.toggle("now",li.dataset.k===ck&&!(ck==="isyak"&&i===0&&false)));
+  // Azan trigger
+  for(const k of ["subuh","zohor","asar","maghrib","isyak"]){const t=today[k];const key=t.toISOString();
+    if(now>=t&&now-t<60000&&lastFired!==key){lastFired=key;SS("fired",key);onPrayer(P(k))}}
+}
+function buildList(){$("list").innerHTML=PRAYERS.map(p=>`<li data-k="${p.k}" class="${p.minor?"minor":""}"><span class="n">${p.n}<span class="ar" lang="ar">${p.ar}</span></span><span class="t">${fmt(today[p.k])}</span></li>`).join("")}
+
+/* ---------- Sound ---------- */
+const audio=$("azan");
+const URLS={azan:"https://www.islamcan.com/audio/adhan/azan1.mp3",azan2:"https://www.islamcan.com/audio/adhan/azan2.mp3"};
+let customURL=null,actx=null,beepTimer=null;
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("solat",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>res(r.result);r.onerror=rej})}
+async function saveFile(f){const db=await idb();return new Promise(r=>{const tx=db.transaction("f","readwrite");tx.objectStore("f").put({blob:f,name:f.name},"sound");tx.oncomplete=r})}
+async function loadFile(){try{const db=await idb();return await new Promise(r=>{const q=db.transaction("f").objectStore("f").get("sound");q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)})}catch{return null}}
+
+function beep(){actx=actx||new (window.AudioContext||window.webkitAudioContext)();let n=0;
+  const one=()=>{[0,.35].forEach((d,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type="sine";o.frequency.value=i?659:880;
+    const t=actx.currentTime+d;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.35,t+.03);g.gain.exponentialRampToValueAtTime(.001,t+1.4);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+1.5)});
+    if(++n>=6)stopSound()};one();beepTimer=setInterval(one,2000)}
+function stopSound(){audio.pause();audio.currentTime=0;clearInterval(beepTimer);beepTimer=null;$("stopbar").hidden=true}
+async function play(){stopSound();$("stopbar").hidden=false;
+  if(st.sound==="beep"){beep();return}
+  if(st.sound==="custom"){if(!customURL){const r=await loadFile();if(r)customURL=URL.createObjectURL(r.blob)}
+    if(!customURL){beep();return}audio.src=customURL}else audio.src=URLS[st.sound];
+  audio.play().catch(()=>{beep()});}
+audio.onended=()=>{$("stopbar").hidden=true};
+audio.onerror=()=>{if(!$("stopbar").hidden&&st.sound!=="beep")beep()};
+
+function showNote(title,body){
+  if(!("Notification" in window)||Notification.permission!=="granted")return;
+  const o={body,icon:"icons/icon-192.png",tag:"solat-time",renotify:true,silent:!!st.azan};
+  const fb=()=>{try{new Notification(title,o)}catch{}};
+  if("serviceWorker" in navigator&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(r=>r&&r.showNotification?r.showNotification(title,o).catch(fb):fb()).catch(fb);else fb()}
+function notifyPrayer(p){showNote("Solat Times · "+p.n,`Telah masuk waktu ${p.n} bagi ${st.loc.name}`)}
+function onPrayer(p){
+  if(st.azan)play();
+  notifyPrayer(p);
+  notice(`Telah masuk waktu ${p.n}.`);
+}
+
+async function soundStatus(){const s=$("sound-status");
+  if(st.sound==="custom"){const r=await loadFile();s.textContent=r?"Fail dipilih: "+r.name:"Tiada fail dipilih."}
+  else if(st.sound==="beep")s.textContent="Bunyi dijana pada peranti, berfungsi tanpa internet.";
+  else s.textContent="Memerlukan sambungan internet. Jika gagal, loceng lembut akan dimainkan.";}
+
+/* Settings dialog */
+const dlg=$("settings");
+function zoneNow(){const z=st.loc.zone&&ZONES.find(x=>x[0]===st.loc.zone);$("zone-now").textContent=z?"Zon dikenal pasti: "+z[0]+" — "+z[2].join(", "):"Zon dikenal pasti: belum ada. Pilih daerah anda dalam senarai Lokasi."}
+$("btn-settings").onclick=()=>{$("azan-toggle").checked=st.azan;$("sound").value=st.sound;soundStatus();zoneNow();notifStatus();dlg.showModal();dlg.scrollTop=0};
+$("settings-close").onclick=()=>dlg.close();
+function notifStatus(){const s=$("notif-status");if(!s)return;
+  if(!("Notification" in window)){s.textContent="Pelayar ini tidak menyokong notifikasi.";$("notif-allow").hidden=true;$("notif-test").hidden=true;return}
+  const p=Notification.permission;
+  s.textContent=p==="granted"?"Notifikasi dibenarkan. Ia muncul pada waktu solat ketika aplikasi dibuka atau masih berjalan di latar belakang.":p==="denied"?"Notifikasi disekat. Hidupkan semula dalam tetapan laman web pada pelayar anda.":"Notifikasi belum dibenarkan.";
+  $("notif-allow").hidden=p!=="default";$("notif-test").hidden=p!=="granted"}
+$("notif-allow").onclick=()=>{try{Promise.resolve(Notification.requestPermission()).then(notifStatus,notifStatus)}catch{notifStatus()}};
+$("notif-test").onclick=()=>showNote("Solat Times · Ujian","Ini ialah ujian notifikasi. Jika anda melihat ini, notifikasi berfungsi.");
+$("azan-toggle").onchange=e=>{st.azan=e.target.checked;SS("azan",st.azan);
+  if(st.azan&&"Notification" in window&&Notification.permission==="default")Promise.resolve(Notification.requestPermission()).then(notifStatus,notifStatus)};
+$("sound").onchange=e=>{const v=e.target.value;if(v==="custom"){$("file").click()}st.sound=v;SS("sound",v);soundStatus()};
+$("file").onchange=async e=>{const f=e.target.files[0];if(!f)return;await saveFile(f);if(customURL)URL.revokeObjectURL(customURL);customURL=URL.createObjectURL(f);st.sound="custom";SS("sound","custom");$("sound").value="custom";soundStatus()};
+$("sound-status").onclick=()=>{if(st.sound==="custom")$("file").click()};
+$("azan-test").onclick=play;$("azan-stop").onclick=stopSound;$("stopbar").onclick=stopSound;
+
+/* Menu: one three-bar button; the icons open in a column */
+const menu=$("menu"),btnMenu=$("btn-menu");
+function setMenu(open){menu.hidden=!open;btnMenu.setAttribute("aria-expanded",open?"true":"false")}
+btnMenu.onclick=e=>{e.stopPropagation();setMenu(menu.hidden)};
+menu.onclick=()=>setMenu(false);
+document.addEventListener("click",e=>{if(!menu.hidden&&!e.target.closest(".actions"))setMenu(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!menu.hidden){setMenu(false);btnMenu.focus()}});
+
+/* Qibla compass: live when the phone has a compass sensor, otherwise a fixed dial with the bearing */
+const qd=$("qibla");let qBear=0,qHead=null,qRaf=0,qTimer=0,qSeen=false;
+const qSet=(id,t)=>{$(id).textContent=t};
+function qMode(m,text){qd.classList.remove("mode-wait","mode-live","mode-static");qd.classList.add("mode-"+m);
+  qSet("q-mode",text||(m==="live"?"Langsung · ikut gerakan telefon":m==="static"?"Tetap · tiada sensor kompas":"Mencari sensor…"))}
+const qRot=(id,deg)=>$(id).setAttribute("transform","rotate("+deg.toFixed(1)+" 130 130)");
+function qBearing(){qBear=qiblaBearing(st.loc.lat,st.loc.lng);qSet("q-deg",qBear.toFixed(1)+"°");qSet("q-dir",dirName(qBear));
+  qSet("q-turn",qBear>180?(360-qBear).toFixed(1)+"° ke kiri dari Utara":qBear.toFixed(1)+"° ke kanan dari Utara");
+  qSet("q-place","Dikira dari lokasi anda: "+st.loc.name);qRot("q-arrow",qBear)}
+function qDraw(){qRaf=0;if(qHead==null)return;qRot("q-dial",-qHead);
+  for(const t of $("q-dial").querySelectorAll("text"))t.setAttribute("transform","rotate("+qHead.toFixed(1)+" "+t.getAttribute("x")+" "+(t.getAttribute("y")-6)+")");
+  const d=angDiff(qBear,qHead),ad=Math.abs(d);qd.classList.toggle("aligned",ad<=3);
+  qSet("q-head","Arah telefon: "+Math.round(qHead)+"°");
+  qSet("q-status",ad<=3?"Menghadap kiblat ✓":"Putar ke "+(d>0?"kanan ":"kiri ")+Math.round(ad)+"°")}
+function qOri(e){const h=headingFromEvent(e);if(h==null)return;if(!qSeen)qMode("live");qSeen=true;qHead=smoothHeading(qHead,h,.25);if(!qRaf)qRaf=requestAnimationFrame(qDraw)}
+function qStatic(){qMode("static");qHead=null;qRot("q-dial",0);for(const t of $("q-dial").querySelectorAll("text"))t.removeAttribute("transform");qd.classList.remove("aligned");qSet("q-head","");
+  qSet("q-status","Dail ini tetap dan tidak bergerak (utara di atas). Sensor kompas tidak tersedia"+(window.isSecureContext?"":" (memerlukan sambungan https)")+". Buka aplikasi kompas pada telefon dan putar sehingga bacaan menunjukkan "+qBear.toFixed(1)+"°.")}
+function qListen(){window.addEventListener("deviceorientationabsolute",qOri,true);window.addEventListener("deviceorientation",qOri,true);
+  clearTimeout(qTimer);qTimer=setTimeout(()=>{if(!qSeen)qStatic()},2500)}
+function qStop(){window.removeEventListener("deviceorientationabsolute",qOri,true);window.removeEventListener("deviceorientation",qOri,true);
+  clearTimeout(qTimer);cancelAnimationFrame(qRaf);qRaf=0}
+function qOpen(){qBearing();qHead=null;qSeen=false;qd.classList.remove("aligned");$("q-perm").hidden=true;qSet("q-head","");qRot("q-dial",0);for(const t of $("q-dial").querySelectorAll("text"))t.removeAttribute("transform");
+  qMode("wait");qSet("q-status","Mencari sensor kompas…");const DOE=window.DeviceOrientationEvent;
+  if(DOE&&typeof DOE.requestPermission==="function"){$("q-perm").hidden=false;qMode("wait","Kompas belum aktif");qSet("q-status","Tekan “Aktifkan Kompas”, kemudian pilih Benarkan apabila diminta.")}
+  else if(DOE)qListen();else qStatic();
+  qd.showModal();qd.scrollTop=0}
+$("btn-qibla").onclick=qOpen;
+$("q-perm").onclick=()=>{const fail=()=>{$("q-perm").hidden=true;qStatic()};
+  DeviceOrientationEvent.requestPermission().then(r=>{if(r==="granted"){$("q-perm").hidden=true;qMode("wait");qSet("q-status","Mencari sensor kompas…");qListen()}else fail()}).catch(fail)};
+$("q-close").onclick=()=>qd.close();
+qd.addEventListener("close",qStop);
+
+let taps=0,tapT=0;$("brand").onclick=()=>{const n=Date.now();taps=n-tapT<1500?taps+1:1;tapT=n;if(taps>=5){taps=0;const d=$("dbg");d.hidden=!d.hidden;
+  if(!d.hidden)d.textContent=JSON.stringify({place:{name:st.loc.name,source:st.loc.source||null,zone:st.loc.zone||null,lat:r2(st.loc.lat),lng:r2(st.loc.lng)},footer:$("src").textContent,placeService:dbg},null,1)}};
+
+/* Start */
+render(true);
+setInterval(()=>render(false),1000);
+if(st.loc.source!=="manual")locate();
+/* no pinch zoom: sizes are preset (second layer, in case a browser ignores the viewport setting) */
+document.addEventListener("touchmove",e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
+if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{});
+})();
+</script>
+</body>
+</html>

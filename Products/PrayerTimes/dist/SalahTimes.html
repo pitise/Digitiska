@@ -1,0 +1,946 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-8mupdYZ6LmpJ0QGOSYsX5w7gCcROeKAWueMo5umWTGc=' 'sha256-f3FJyaN2DKhOIJiTxkL2JzYSkpAdD+q2G5mXZ9XSK5E='; style-src 'sha256-6FCn4TxSjouR8HLfxdB2iyolvOMHI+BjT89fd53f93M='; img-src data:; media-src blob:; connect-src https://nominatim.openstreetmap.org https://ipwho.is; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="origin">
+<!-- Salah Times - single-file build. Source and checks: Products/PrayerTimes in the Digitiska repo. -->
+<title>Salah Times - Prayer Times</title>
+<meta name="description" content="Current prayer, time left, and today's prayer times using the JAKIM (Malaysia) method.">
+<meta name="theme-color" content="#0a2118">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Salah Times">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgZmlsbD0iIzBhMjExOCIvPgogIDxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTE4IiBmaWxsPSIjZTNiOTVmIi8+CiAgPGNpcmNsZSBjeD0iMzAwIiBjeT0iMjM4IiByPSIxMDQiIGZpbGw9IiMwYTIxMTgiLz4KICA8cGF0aCBkPSJNMzM2IDE2OGw5IDI0IDI1IDItMTkgMTYgNiAyNS0yMS0xNC0yMSAxNCA2LTI1LTE5LTE2IDI1LTJ6IiBmaWxsPSIjZTNiOTVmIi8+Cjwvc3ZnPgo=" type="image/svg+xml">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<style>
+:root {
+  /* Sampled from the reference screenshots */
+  --bg: #08211a;
+  --hero: #11392d;
+  --hero-line: #465a3d;
+  --row: #0c2e24;
+  --row-line: #284439;
+  --active-bg: #293826;
+  --gold: #e4bd6c;
+  --text: #f2ead4;
+  --muted: #a6ad92;
+  --faint: #76836e;
+  --field: #142a23;
+  --field-line: #37493f;
+  --divider: #325446;
+  --crescent: #264633;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --arabic: "Noto Naskh Arabic", "Geeza Pro", "Segoe UI", "Traditional Arabic", serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.4 var(--sans);
+  min-height: 100vh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.wrap { max-width: 520px; margin: 0 auto; padding: 24px 16px 40px; }
+
+.ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.top-text { min-width: 0; }
+.loc { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 18px; font-weight: 500; }
+.loc span { overflow-wrap: anywhere; }
+h1 { font: 600 28px/1.2 var(--serif); margin: 12px 0 4px; }
+#date-hijri { margin: 0; color: var(--muted); font-size: 15px; }
+.actions { display: flex; gap: 10px; flex: none; }
+.icon-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 0; background: var(--row); color: var(--text);
+  display: grid; place-items: center; cursor: pointer;
+}
+.icon-btn:hover { background: var(--hero); }
+.icon-btn .slash { display: none; }
+.icon-btn.off { color: var(--muted); }
+.icon-btn.off .slash { display: block; }
+.icon-btn.spin .ico { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+button:focus-visible, input:focus-visible + .switch { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+.notice {
+  margin: 16px 0 0; padding: 12px 14px; border-radius: 12px;
+  background: rgba(228, 189, 108, .12); border: 1px solid rgba(227, 185, 95, .35);
+  color: var(--text); font-size: 14px;
+  display: flex; gap: 12px; align-items: center; justify-content: space-between;
+}
+.notice[hidden] { display: none; }
+.notice button {
+  flex: none; border: 1px solid var(--gold); background: transparent; color: var(--gold);
+  border-radius: 8px; padding: 8px 12px; font: inherit; cursor: pointer; min-height: 40px;
+}
+
+.hero {
+  position: relative; overflow: hidden; margin-top: 24px; padding: 28px;
+  border-radius: 28px; background: var(--hero); border: 1px solid var(--hero-line);
+}
+.hero::after {
+  content: ""; position: absolute; right: -28px; top: -10px; width: 156px; height: 156px;
+  border-radius: 50%; border: 14px solid var(--crescent); pointer-events: none;
+}
+.hero-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; position: relative; z-index: 1; }
+.hero h2 { margin: 0; font: 600 40px/1.15 var(--serif); color: var(--gold); }
+#hero-ar { font: 400 26px/1.4 var(--arabic); color: var(--text); }
+.hero hr { border: 0; border-top: 1px solid var(--divider); margin: 18px 0; position: relative; z-index: 1; }
+.hero-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; position: relative; z-index: 1; }
+.lbl { color: var(--muted); font-size: 14px; }
+.count { font: 500 34px/1.2 var(--sans); font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+.start { color: var(--muted); font-size: 18px; font-variant-numeric: tabular-nums; padding-bottom: 4px; }
+.next { margin: 14px 0 0; color: var(--muted); font-size: 14px; position: relative; z-index: 1; }
+
+.list { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 10px; }
+.row {
+  display: flex; align-items: center; gap: 14px; padding: 18px 20px;
+  background: var(--row); border: 1px solid var(--row-line); border-radius: 20px;
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--row-line); flex: none; }
+.names { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.name { font-size: 19px; font-weight: 600; }
+.ar { font: 400 15px/1.5 var(--arabic); color: var(--muted); }
+.right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+.time { font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.tag { font-size: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.tag:empty { display: none; }
+.row.is-now {
+  background: var(--active-bg); border-color: var(--gold);
+  box-shadow: 0 0 0 2.5px rgba(228, 189, 108, .6);
+}
+.row.is-now .dot { background: var(--gold); }
+.row.is-now .time { font-size: 28px; font-weight: 600; }
+.row.is-now .tag { color: var(--gold); }
+
+.method { margin: 28px 0 0; display: flex; flex-direction: column; gap: 8px; }
+.method span { color: var(--muted); font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; }
+.method strong, .field {
+  font-weight: 500; padding: 14px 16px; border-radius: 14px;
+  background: var(--field); border: 1px solid var(--field-line); color: var(--text);
+}
+footer { margin-top: 32px; text-align: center; color: var(--faint); font-size: 12px; }
+
+dialog {
+  width: min(92vw, 440px); max-height: 90vh; overflow: auto;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--row-line); border-radius: 24px; padding: 24px;
+}
+dialog::backdrop { background: rgba(0, 0, 0, .6); }
+dialog h2 { margin: 0 0 16px; font: 600 24px/1.2 var(--serif); }
+dialog h3 { margin: 22px 0 6px; font-size: 14px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+.small { font-size: 14px; color: var(--muted); margin: 8px 0; }
+.warn { color: var(--gold); }
+select.field { width: 100%; font: inherit; margin-top: 6px; }
+.btn {
+  display: inline-block; margin-top: 8px; min-height: 44px; padding: 10px 18px; border-radius: 12px;
+  background: transparent; color: var(--text); border: 1px solid var(--row-line); font: inherit; cursor: pointer;
+}
+.btn:hover { background: var(--hero); }
+.btn.primary { background: var(--gold); color: #1b1608; border-color: var(--gold); font-weight: 600; margin-top: 24px; width: 100%; }
+.btn[hidden] { display: none; }
+#install-block[hidden] { display: none; }
+
+.switch-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; cursor: pointer; font-size: 17px; }
+.switch-row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch { width: 52px; height: 30px; border-radius: 15px; background: var(--row-line); position: relative; flex: none; transition: background .15s; }
+.switch::after { content: ""; position: absolute; left: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--text); transition: transform .15s; }
+input:checked + .switch { background: var(--gold); }
+input:checked + .switch::after { transform: translateX(22px); background: #1b1608; }
+
+@media (max-width: 380px) {
+  .hero { padding: 22px; }
+  .hero h2 { font-size: 34px; }
+  .count { font-size: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn.spin .ico { animation: none; }
+  .switch, .switch::after { transition: none; }
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div class="top-text">
+      <div class="loc">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="loc-name">Locating…</span>
+      </div>
+      <h1 id="date-main"></h1>
+      <p id="date-hijri"></p>
+    </div>
+    <div class="actions">
+      <button id="btn-settings" class="icon-btn" type="button" aria-label="Azan settings" aria-haspopup="dialog">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path class="slash" d="M3 3l18 18"/></svg>
+      </button>
+      <button id="btn-refresh" class="icon-btn" type="button" aria-label="Update my location">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div id="notice" class="notice" role="status" hidden>
+    <span id="notice-text"></span>
+    <button id="notice-action" type="button" hidden></button>
+  </div>
+
+  <section class="hero" aria-label="Current prayer">
+    <div class="hero-head">
+      <h2 id="hero-name">&nbsp;</h2>
+      <span id="hero-ar" lang="ar" dir="rtl"></span>
+    </div>
+    <hr>
+    <div class="hero-foot">
+      <div>
+        <div id="hero-label" class="lbl">Ends in</div>
+        <div id="hero-count" class="count">--:--:--</div>
+      </div>
+      <span id="hero-start" class="start"></span>
+    </div>
+    <p id="hero-next" class="next"></p>
+  </section>
+
+  <ul id="list" class="list" aria-label="Prayer times today"></ul>
+
+  <p class="method"><span>Calculation method</span><strong>Malaysia (JAKIM)</strong></p>
+  <footer>© 2026 Digitiska</footer>
+</main>
+
+<dialog id="settings" aria-labelledby="settings-title">
+  <h2 id="settings-title">Settings</h2>
+  <h3>Azan</h3>
+
+  <label class="switch-row" for="azan-toggle">
+    <span>Play azan at prayer time</span>
+    <input id="azan-toggle" type="checkbox" role="switch">
+    <span class="switch" aria-hidden="true"></span>
+  </label>
+  <p id="azan-status" class="small"></p>
+  <button id="azan-test" class="btn" type="button">Test azan</button>
+
+  <p class="small warn">Azan and alerts only work while this app is open on your device. A web app cannot wake a closed or locked phone.</p>
+
+  <h3>Location</h3>
+  <label class="small" for="loc-select">Automatic uses your phone's location. If that is unavailable, choose your place. "Approximate" uses your internet connection (sends your internet address to ipwho.is; can be far off on mobile data).</label>
+  <select id="loc-select" class="field"></select>
+
+  <div id="install-block">
+    <h3>Install</h3>
+    <button id="install-btn" class="btn" type="button" hidden>Install app</button>
+    <p id="install-hint" class="small">iPhone / iPad: tap Share, then Add to Home Screen. Android: browser menu, then Install app (or Add to Home screen).</p>
+  </div>
+
+  <h3>Privacy</h3>
+  <p class="small">No account, no ads, no analytics. Your position stays on this device. To show a place name, a position rounded to about 1 km is sent to OpenStreetMap Nominatim. Only if you choose Approximate location, your internet address is sent to ipwho.is.</p>
+  <p class="small">Times are calculated on this device and can differ by a minute or two from the official e-solat timetable.</p>
+
+  <button id="settings-close" class="btn primary" type="button">Close</button>
+</dialog>
+
+<audio id="azan" preload="none"></audio>
+<script>window.SALAH_EMBED={azan:"",azanType:""};</script>
+<script>
+/*
+ * prayer.js - offline prayer-time calculation (no network, no dependencies).
+ * Astronomical method follows the widely used PrayTimes.org formulation.
+ * JAKIM parameters: Fajr 20 deg, Isha 18 deg, Asr Shafi'i (shadow factor 1), Zohor +2 min.
+ * Results are absolute instants (Date), so display in the device's local timezone.
+ */
+(function (root) {
+  'use strict';
+
+  var D2R = Math.PI / 180, R2D = 180 / Math.PI;
+  var sin = function (d) { return Math.sin(d * D2R); };
+  var cos = function (d) { return Math.cos(d * D2R); };
+  var tan = function (d) { return Math.tan(d * D2R); };
+  var asin = function (x) { return Math.asin(x) * R2D; };
+  var acos = function (x) { return Math.acos(x) * R2D; };
+  var atan2 = function (y, x) { return Math.atan2(y, x) * R2D; };
+  var arccot = function (x) { return Math.atan(1 / x) * R2D; };
+  var fixAngle = function (a) { return ((a % 360) + 360) % 360; };
+  var fixHour = function (h) { return ((h % 24) + 24) % 24; };
+
+  var METHODS = {
+    /* offsetMin: minutes added after rounding. Zohor +2 reproduces the reference timetable
+       (inferred from one observed data point; see README). */
+    JAKIM: { name: 'Malaysia (JAKIM)', fajr: 20, isha: 18, asrFactor: 1, offsetMin: { dhuhr: 2 } }
+  };
+
+  function julian(y, m, d) {
+    if (m <= 2) { y -= 1; m += 12; }
+    var A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4);
+    return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + B - 1524.5;
+  }
+
+  function sunPosition(jd) {
+    var D = jd - 2451545.0;
+    var g = fixAngle(357.529 + 0.98560028 * D);
+    var q = fixAngle(280.459 + 0.98564736 * D);
+    var L = fixAngle(q + 1.915 * sin(g) + 0.020 * sin(2 * g));
+    var e = 23.439 - 0.00000036 * D;
+    var RA = fixHour(atan2(cos(e) * sin(L), cos(L)) / 15);
+    return { decl: asin(sin(e) * sin(L)), eqt: q / 15 - RA };
+  }
+
+  /* Raw times in "hours UTC" for the solar day whose local calendar date is y/m/d. */
+  function rawTimes(y, m, d, lat, lng, method) {
+    var jDate = julian(y, m, d) - lng / (15 * 24);
+    var midDay = function (t) { return fixHour(12 - sunPosition(jDate + t).eqt); };
+    var angleTime = function (angle, t, ccw) {
+      var decl = sunPosition(jDate + t).decl;
+      var n = -sin(angle) - sin(decl) * sin(lat);
+      var x = n / (cos(decl) * cos(lat));
+      if (x < -1 || x > 1) return NaN;       /* sun never reaches this angle */
+      return midDay(t) + (ccw ? -1 : 1) * acos(x) / 15;
+    };
+    var asrTime = function (factor, t) {
+      var decl = sunPosition(jDate + t).decl;
+      return angleTime(-arccot(factor + tan(Math.abs(lat - decl))), t, false);
+    };
+
+    var t = { fajr: 5 / 24, sunrise: 6 / 24, dhuhr: 12 / 24, asr: 13 / 24, maghrib: 18 / 24, isha: 18 / 24 };
+    var out = {
+      fajr: angleTime(method.fajr, t.fajr, true),
+      sunrise: angleTime(0.833, t.sunrise, true),
+      dhuhr: midDay(t.dhuhr),
+      asr: asrTime(method.asrFactor, t.asr),
+      maghrib: angleTime(0.833, t.maghrib, false),
+      isha: angleTime(method.isha, t.isha, false)
+    };
+    var utcShift = -lng / 15;
+    for (var k in out) out[k] += utcShift;
+    return out;
+  }
+
+  var ORDER = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+  /*
+   * Times for the local calendar date y/m/d (month 1-12) at lat/lng.
+   * Each time is rounded to the nearest minute, as published timetables are.
+   * Returns null if any time cannot be computed (extreme latitudes).
+   */
+  function compute(y, m, d, lat, lng, methodKey) {
+    var method = METHODS[methodKey || 'JAKIM'];
+    var raw = rawTimes(y, m, d, lat, lng, method);
+    var base = Date.UTC(y, m - 1, d);
+    var out = {};
+    for (var i = 0; i < ORDER.length; i++) {
+      var h = raw[ORDER[i]];
+      if (!isFinite(h)) return null;
+      var off = (method.offsetMin && method.offsetMin[ORDER[i]]) || 0;
+      out[ORDER[i]] = new Date((Math.round((base + h * 3600000) / 60000) + off) * 60000);
+    }
+    return out;
+  }
+
+  var api = { compute: compute, ORDER: ORDER, METHODS: METHODS };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.PrayerCalc = api;
+})(typeof self !== 'undefined' ? self : this);
+
+/*
+ * place.js - turns a Nominatim reverse-geocode result into a short place name,
+ * and holds the built-in places for manual selection when GPS is unavailable.
+ * Local government bodies (Majlis Perbandaran..., Dewan Bandaraya..., "... City Council")
+ * are never used as the place name; the district name (e.g. Hulu Langat) is preferred.
+ */
+(function (root) {
+  'use strict';
+
+  var COUNCIL = /\bcouncil\b|^(majlis|dewan bandaraya|perbadanan)\b|\b(bandaraya|perbandaran)\b/i;
+  /* Most specific wanted last: district first, then smaller areas, then the state. */
+  var ORDER = ['county', 'state_district', 'suburb', 'city_district', 'village', 'town', 'city', 'municipality', 'state'];
+
+  function clean(name) {
+    return String(name || '').replace(/^(daerah|mukim)\s+/i, '').replace(/\s+(district|daerah)$/i, '').trim();
+  }
+
+  function placeName(data) {
+    var a = data && data.address;
+    if (!a) return '';
+    var place = '';
+    for (var i = 0; i < ORDER.length && !place; i++) {
+      var v = clean(a[ORDER[i]]);
+      if (v && !COUNCIL.test(v)) place = v;
+    }
+    if (!place) return '';
+    return a.country && a.country !== place ? place + ', ' + a.country : place;
+  }
+
+  /* Approximate city-centre coordinates (about +/-5 km). Enough for prayer times: 0.1 deg of longitude is ~24 s. */
+  var PLACES = [
+    { id: 'kl',   name: 'Kuala Lumpur',    lat: 3.139, lng: 101.687 },
+    { id: 'hl',   name: 'Hulu Langat',     lat: 3.100, lng: 101.800 },
+    { id: 'kjg',  name: 'Kajang',          lat: 2.993, lng: 101.787 },
+    { id: 'sa',   name: 'Shah Alam',       lat: 3.073, lng: 101.518 },
+    { id: 'pj',   name: 'Petaling Jaya',   lat: 3.107, lng: 101.607 },
+    { id: 'kl2',  name: 'Klang',           lat: 3.044, lng: 101.445 },
+    { id: 'pjy',  name: 'Putrajaya',       lat: 2.926, lng: 101.696 },
+    { id: 'srb',  name: 'Seremban',        lat: 2.726, lng: 101.942 },
+    { id: 'mlk',  name: 'Melaka',          lat: 2.196, lng: 102.250 },
+    { id: 'jb',   name: 'Johor Bahru',     lat: 1.493, lng: 103.741 },
+    { id: 'kt',   name: 'Kuantan',         lat: 3.808, lng: 103.326 },
+    { id: 'kter', name: 'Kuala Terengganu', lat: 5.330, lng: 103.137 },
+    { id: 'kb',   name: 'Kota Bharu',      lat: 6.125, lng: 102.238 },
+    { id: 'ipoh', name: 'Ipoh',            lat: 4.598, lng: 101.090 },
+    { id: 'gt',   name: 'George Town',     lat: 5.414, lng: 100.329 },
+    { id: 'as',   name: 'Alor Setar',      lat: 6.125, lng: 100.368 },
+    { id: 'kgr',  name: 'Kangar',          lat: 6.441, lng: 100.199 },
+    { id: 'kk',   name: 'Kota Kinabalu',   lat: 5.980, lng: 116.073 },
+    { id: 'sdk',  name: 'Sandakan',        lat: 5.840, lng: 118.117 },
+    { id: 'kch',  name: 'Kuching',         lat: 1.553, lng: 110.359 },
+    { id: 'miri', name: 'Miri',            lat: 4.399, lng: 113.991 },
+    { id: 'lbn',  name: 'Labuan',          lat: 5.283, lng: 115.231 }
+  ];
+
+  /*
+   * Reads an internet-address (IP) location response. Accepts the common shapes:
+   *   { success, latitude, longitude, city, region, country }   or   { lat, lon|lng, city, country_name|country }
+   * Returns { lat, lng, name } or null if the data is missing, failed, or out of range.
+   */
+  function parseIpLocation(data) {
+    if (!data || data.success === false || data.error) return null;
+    var lat = Number(data.latitude != null ? data.latitude : data.lat);
+    var lng = Number(data.longitude != null ? data.longitude : (data.lon != null ? data.lon : data.lng));
+    if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return null;
+    if (lat === 0 && lng === 0) return null;
+    var city = String(data.city || data.region || '').trim();
+    if (COUNCIL.test(city)) city = '';
+    var country = String(data.country_name || data.country || '').trim();
+    var name = [city, country].filter(Boolean).join(', ') || lat.toFixed(2) + '°, ' + lng.toFixed(2) + '°';
+    return { lat: lat, lng: lng, name: name };
+  }
+
+  var api = { placeName: placeName, parseIpLocation: parseIpLocation, PLACES: PLACES };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.PlaceInfo = api;
+})(typeof self !== 'undefined' ? self : this);
+
+(function () {
+  'use strict';
+
+  var PRAYERS = [
+    { key: 'fajr',    ms: 'Subuh',   ar: 'الفجر',  azan: true },
+    { key: 'sunrise', ms: 'Syuruk',  ar: 'الشروق', azan: false },
+    { key: 'dhuhr',   ms: 'Zohor',   ar: 'الظهر',  azan: true },
+    { key: 'asr',     ms: 'Asar',    ar: 'العصر',  azan: true },
+    { key: 'maghrib', ms: 'Maghrib', ar: 'المغرب', azan: true },
+    { key: 'isha',    ms: 'Isyak',   ar: 'العشاء', azan: true }
+  ];
+  var P = {};
+  PRAYERS.forEach(function (p) { P[p.key] = p; });
+
+  var DAYS = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+  var MONTHS = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+  var HIJRI = ['Muharram', 'Safar', 'Rabiulawal', 'Rabiulakhir', 'Jamadilawal', 'Jamadilakhir', 'Rejab', 'Syaaban', 'Ramadan', 'Syawal', 'Zulkaedah', 'Zulhijjah'];
+
+  var DEFAULT_LOC = { lat: 3.139, lng: 101.687, name: 'Kuala Lumpur, Malaysia (default)' };
+  var KEY = { loc: 'pt.loc', azan: 'pt.azan', fired: 'pt.fired' };
+  var FIRE_WINDOW_MS = 90 * 1000;
+  var AZAN_URL = 'audio/azan.mp3';
+  var IP_URL = 'https://ipwho.is/';   /* internet-address location, used only when the user chooses it */
+  var EMBED = window.SALAH_EMBED || null;
+
+  function $(id) { return document.getElementById(id); }
+  var el = {
+    locName: $('loc-name'), dateMain: $('date-main'), dateHijri: $('date-hijri'),
+    notice: $('notice'), noticeText: $('notice-text'), noticeAction: $('notice-action'),
+    heroName: $('hero-name'), heroAr: $('hero-ar'), heroLabel: $('hero-label'),
+    heroCount: $('hero-count'), heroStart: $('hero-start'), heroNext: $('hero-next'),
+    list: $('list'), btnSettings: $('btn-settings'), btnRefresh: $('btn-refresh'),
+    dialog: $('settings'), toggle: $('azan-toggle'), azanStatus: $('azan-status'),
+    azanTest: $('azan-test'), close: $('settings-close'),
+    installBlock: $('install-block'), installBtn: $('install-btn'), installHint: $('install-hint'),
+    audio: $('azan'), locSelect: $('loc-select')
+  };
+
+  /* ---------- storage (every access guarded: it can throw in private mode) ---------- */
+  function load(key) {
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+  }
+  function save(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* ignore */ }
+  }
+
+  /* ---------- state ---------- */
+  var loc = (function () {
+    var l = load(KEY.loc);
+    if (l && isFinite(l.lat) && isFinite(l.lng) && Math.abs(l.lat) <= 90 && Math.abs(l.lng) <= 180) return l;
+    return null;
+  })();
+  var azanOn = load(KEY.azan) === true;
+  var cache = { key: '', tl: null };
+  var renderedTimesKey = '';
+  var renderedDay = '';
+  var lastFixAt = 0;
+  var rows = {};
+
+  /* ---------- small helpers ---------- */
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function hm(d) { return d.getHours() + ':' + pad(d.getMinutes()); }
+  function hms(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000));
+    return pad(Math.floor(s / 3600)) + ':' + pad(Math.floor(s % 3600 / 60)) + ':' + pad(s % 60);
+  }
+  function make(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text) n.textContent = text;
+    return n;
+  }
+  function here() { return loc || DEFAULT_LOC; }
+
+  /* ---------- timeline: yesterday + today + tomorrow, sorted ---------- */
+  function getTimeline(now) {
+    var h = here();
+    var key = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate() + '@' + h.lat.toFixed(3) + ',' + h.lng.toFixed(3);
+    if (cache.key === key) return cache.tl;
+    var tl = [];
+    for (var off = -1; off <= 1; off++) {
+      var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + off);
+      var t = PrayerCalc.compute(d.getFullYear(), d.getMonth() + 1, d.getDate(), h.lat, h.lng, 'JAKIM');
+      if (!t) { cache = { key: key, tl: null }; return null; }
+      for (var i = 0; i < PRAYERS.length; i++) tl.push({ key: PRAYERS[i].key, time: t[PRAYERS[i].key], off: off });
+    }
+    tl.sort(function (a, b) { return a.time - b.time; });
+    cache = { key: key, tl: tl };
+    return tl;
+  }
+
+  /* ---------- rendering ---------- */
+  function buildList() {
+    PRAYERS.forEach(function (p) {
+      var li = make('li', 'row');
+      var names = make('div', 'names');
+      names.appendChild(make('span', 'name', p.ms));
+      var ar = make('span', 'ar', p.ar);
+      ar.lang = 'ar';
+      names.appendChild(ar);
+      var right = make('div', 'right');
+      var t = make('span', 'time');
+      var tag = make('span', 'tag');
+      right.appendChild(t);
+      right.appendChild(tag);
+      li.appendChild(make('span', 'dot'));
+      li.appendChild(names);
+      li.appendChild(right);
+      el.list.appendChild(li);
+      rows[p.key] = { li: li, time: t, tag: tag, cls: '', tagText: '' };
+    });
+  }
+
+  function hijriText(now) {
+    try {
+      var parts = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(now);
+      var o = {};
+      parts.forEach(function (p) { o[p.type] = p.value; });
+      var m = parseInt(o.month, 10);
+      if (!(m >= 1 && m <= 12)) return '';
+      return parseInt(o.day, 10) + ' ' + HIJRI[m - 1] + ' ' + parseInt(o.year, 10) + ' H';
+    } catch (e) { return ''; }
+  }
+
+  function renderDay(now) {
+    var key = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+    if (key === renderedDay) return;
+    renderedDay = key;
+    el.dateMain.textContent = DAYS[now.getDay()] + ', ' + now.getDate() + ' ' + MONTHS[now.getMonth()];
+    el.dateHijri.textContent = hijriText(now);
+  }
+
+  function renderTimes(tl) {
+    if (renderedTimesKey === cache.key) return;
+    renderedTimesKey = cache.key;
+    tl.forEach(function (e) { if (e.off === 0) rows[e.key].time.textContent = hm(e.time); });
+  }
+
+  function setRow(key, cls, tagText) {
+    var r = rows[key];
+    if (r.cls !== cls) { r.cls = cls; r.li.className = 'row' + (cls ? ' ' + cls : ''); }
+    if (r.tagText !== tagText) { r.tagText = tagText; r.tag.textContent = tagText; }
+  }
+
+  function tick() {
+    var now = new Date();
+    var tl = getTimeline(now);
+    renderDay(now);
+    if (!tl) {
+      showNotice('Prayer times cannot be calculated for this location.');
+      return;
+    }
+    renderTimes(tl);
+
+    var idx = -1;
+    for (var i = 0; i < tl.length; i++) if (tl[i].time <= now) idx = i;
+    if (idx < 0 || idx >= tl.length - 1) return;
+    var cur = tl[idx], end = tl[idx + 1], next = null;
+    for (var j = idx + 1; j < tl.length; j++) if (tl[j].key !== 'sunrise') { next = tl[j]; break; }
+
+    el.heroName.textContent = P[cur.key].ms;
+    el.heroAr.textContent = P[cur.key].ar;
+    el.heroStart.textContent = hm(cur.time);
+    el.heroCount.textContent = hms(end.time - now);
+    if (cur.key === 'sunrise') {
+      el.heroLabel.textContent = P[end.key].ms + ' in';
+      el.heroNext.textContent = 'No obligatory prayer now';
+    } else {
+      el.heroLabel.textContent = 'Ends in';
+      var line = 'Next prayer: ' + P[next.key].ms + ' at ' + hm(next.time);
+      if (next.time.getTime() !== end.time.getTime()) line += ' (in ' + hms(next.time - now) + ')';
+      el.heroNext.textContent = line;
+    }
+
+    PRAYERS.forEach(function (p) {
+      var current = p.key === cur.key;
+      setRow(p.key, current ? 'is-now' : '', current ? 'Now' : '');
+    });
+
+    if (azanOn) {
+      for (var m = 0; m < tl.length; m++) {
+        var age = now - tl[m].time;
+        if (P[tl[m].key].azan && age >= 0 && age < FIRE_WINDOW_MS) fire(tl[m]);
+      }
+    }
+  }
+
+  /* ---------- notice banner ---------- */
+  function showNotice(text, actionLabel, action) {
+    el.noticeText.textContent = text;
+    el.noticeAction.hidden = !actionLabel;
+    el.noticeAction.textContent = actionLabel || '';
+    el.noticeAction.onclick = action || null;
+    el.notice.hidden = false;
+  }
+  function hideNotice() { el.notice.hidden = true; }
+
+  /* ---------- location ---------- */
+  function setLocLabel() {
+    el.locName.textContent = loc ? (loc.name || 'Locating…') + (loc.source === 'ip' ? ' (approx.)' : '') : DEFAULT_LOC.name;
+  }
+
+  function distKm(a, b) {
+    var R = 6371, r = Math.PI / 180;
+    var dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+    var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+
+  var lookupSeq = 0;
+  function lookup(lat, lng) {
+    var seq = ++lookupSeq;
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
+    /* Position is rounded to 2 decimals (~1 km) before it leaves the device. */
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=12&addressdetails=1&accept-language=ms,en' +
+      '&lat=' + lat.toFixed(2) + '&lon=' + lng.toFixed(2);
+    fetch(url, { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', referrerPolicy: 'origin' })
+      .then(function (r) { if (!r.ok) throw new Error('lookup ' + r.status); return r.json(); })
+      .then(function (data) {
+        var name = PlaceInfo.placeName(data);
+        if (seq !== lookupSeq || !loc || loc.manual || !name) return;
+        loc.name = name;
+        loc.named = true;
+        save(KEY.loc, loc);
+        setLocLabel();
+      })
+      .catch(function () { /* keep the coordinate label */ })
+      .then(function () { clearTimeout(timer); });
+  }
+
+  function detect(force) {
+    if (!force && loc && loc.manual) return;
+    function done() { el.btnRefresh.classList.remove('spin'); el.btnRefresh.disabled = false; }
+    if (!navigator.geolocation) {
+      showNotice(loc ? 'This browser cannot update location. Showing the last known place.' : 'This browser has no location support. Showing Kuala Lumpur times. Choose your place in Settings (bell icon), or use an approximate location.', loc ? '' : 'Use approximate', loc ? null : locateByIp);
+      return;
+    }
+    el.btnRefresh.classList.add('spin');
+    el.btnRefresh.disabled = true;
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      done();
+      var next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      var moved = !loc || loc.manual || loc.source === 'ip' || distKm(loc, next) > 1;
+      var keepName = !moved && loc.named && !loc.manual && loc.source !== 'ip';
+      loc = {
+        lat: next.lat, lng: next.lng,
+        name: keepName ? loc.name : next.lat.toFixed(2) + '°, ' + next.lng.toFixed(2) + '°',
+        named: keepName,
+        manual: false,
+        source: 'gps'
+      };
+      syncSelect();
+      save(KEY.loc, loc);
+      lastFixAt = Date.now();
+      hideNotice();
+      setLocLabel();
+      tick();
+      if (!loc.named || force) lookup(next.lat, next.lng);
+    }, function (err) {
+      done();
+      var denied = err && err.code === 1;
+      if (loc && loc.source === 'ip') showNotice(APPROX_NOTICE, 'Retry GPS', function () { detect(true); });
+      else if (loc) showNotice('Could not update location. Showing the last known place.', 'Retry', function () { detect(true); });
+      else if (denied) showNotice('Location is off, so Kuala Lumpur times are shown. Allow location for this site in your browser settings, choose your place in Settings (bell icon), or use an approximate location.', 'Use approximate', locateByIp);
+      else showNotice('Could not get your location. Showing Kuala Lumpur times. Choose your place in Settings (bell icon), or use an approximate location.', 'Use approximate', locateByIp);
+      syncSelect();
+      setLocLabel();
+    }, { enableHighAccuracy: false, timeout: 15000, maximumAge: force ? 0 : 600000 });
+  }
+
+  /* ---------- approximate location from the internet address (only when the user chooses it) ---------- */
+  var APPROX_NOTICE = 'Approximate location from your internet connection. On mobile data it can be far off. Choose your place in Settings (bell icon) for accurate times.';
+
+  function locateByIp() {
+    var ctrl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 8000);
+    lookupSeq++;                                   /* cancel any pending name lookup */
+    el.btnRefresh.classList.add('spin');
+    fetch(IP_URL, { signal: ctrl ? ctrl.signal : undefined, credentials: 'omit', referrerPolicy: 'no-referrer' })
+      .then(function (r) { if (!r.ok) throw new Error('lookup ' + r.status); return r.json(); })
+      .then(function (data) {
+        var found = PlaceInfo.parseIpLocation(data);
+        if (!found) throw new Error('no position');
+        loc = { lat: found.lat, lng: found.lng, name: found.name, named: true, manual: false, source: 'ip' };
+        save(KEY.loc, loc);
+        showNotice(APPROX_NOTICE, 'Retry GPS', function () { detect(true); });
+        setLocLabel();
+        syncSelect();
+        tick();
+      })
+      .catch(function () {
+        showNotice('Could not get an approximate location. Choose your place in Settings (bell icon).');
+        syncSelect();
+      })
+      .then(function () { clearTimeout(timer); el.btnRefresh.classList.remove('spin'); });
+  }
+
+  /* ---------- manual place (when GPS is unavailable) ---------- */
+  function buildPlaceSelect() {
+    var o = make('option', '', 'Automatic (GPS)');
+    o.value = 'gps';
+    el.locSelect.appendChild(o);
+    var ip = make('option', '', 'Approximate (internet connection)');
+    ip.value = 'ip';
+    el.locSelect.appendChild(ip);
+    PlaceInfo.PLACES.forEach(function (p) {
+      var opt = make('option', '', p.name);
+      opt.value = p.id;
+      el.locSelect.appendChild(opt);
+    });
+  }
+  function syncSelect() {
+    el.locSelect.value = loc && loc.manual ? loc.placeId : (loc && loc.source === 'ip' ? 'ip' : 'gps');
+  }
+  function onPlaceChosen() {
+    var v = el.locSelect.value;
+    if (v === 'gps') { detect(true); return; }
+    if (v === 'ip') { locateByIp(); return; }
+    var place = null;
+    PlaceInfo.PLACES.forEach(function (p) { if (p.id === v) place = p; });
+    if (!place) return;
+    lookupSeq++;                                   /* cancel any pending name lookup */
+    loc = { lat: place.lat, lng: place.lng, name: place.name + ', Malaysia', named: true, manual: true, placeId: place.id, source: 'manual' };
+    save(KEY.loc, loc);
+    hideNotice();
+    setLocLabel();
+    tick();
+  }
+
+  /* ---------- azan ---------- */
+  var unlocked = false;
+  var azanLoaded = null;
+  var silentUrl = null;
+
+  function silentWav() {
+    if (silentUrl) return silentUrl;
+    var n = 800, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+    function str(o, s) { for (var i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); }
+    str(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); str(8, 'WAVE'); str(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 16000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    str(36, 'data'); v.setUint32(40, n * 2, true);
+    silentUrl = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+    return silentUrl;
+  }
+
+  /* Browsers only allow audio after a user gesture: play a silent clip inside one. */
+  function unlockAudio() {
+    if (unlocked) return;
+    el.audio.src = silentWav();
+    var p = el.audio.play();
+    azanLoaded = null;
+    if (p && p.then) {
+      p.then(function () {
+        unlocked = true;
+        if (el.audio.src === silentUrl) el.audio.pause();   /* never pause the real azan */
+      }).catch(function () { /* still locked */ });
+    }
+  }
+
+  /* Standalone build: the azan sound is embedded in the page as base64 (window.SALAH_EMBED). */
+  function embeddedAzan() {
+    var bin = atob(EMBED.azan), bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new Blob([bytes], { type: EMBED.azanType || 'audio/mpeg' });
+  }
+
+  function loadAzan() {
+    if (azanLoaded) return azanLoaded;
+    var source = EMBED
+      ? (EMBED.azan ? Promise.resolve(embeddedAzan()) : Promise.reject(new Error('missing')))
+      : fetch(AZAN_URL, { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error('missing'); return r.blob(); });
+    azanLoaded = source
+      .then(function (b) { el.audio.src = URL.createObjectURL(b); })
+      .catch(function (e) { azanLoaded = null; throw e; });
+    return azanLoaded;
+  }
+
+  function playAzan() {
+    return loadAzan().then(function () {
+      el.audio.currentTime = 0;
+      return el.audio.play();
+    }).then(function () {
+      unlocked = true;
+      updateTestButton();
+    }).catch(function (e) {
+      if (e && e.name === 'NotAllowedError') {
+        showNotice('The browser blocked the azan. Tap to allow sound.', 'Allow', function () { hideNotice(); playAzan(); });
+      } else {
+        showNotice(EMBED ? 'No azan sound is included in this copy of the app.' : 'Azan audio file not found. Add it as ' + AZAN_URL + ' (see README).');
+      }
+      updateTestButton();
+    });
+  }
+
+  function stopAzan() { el.audio.pause(); el.audio.currentTime = 0; updateTestButton(); }
+
+  function updateTestButton() {
+    el.azanTest.textContent = (!el.audio.paused && !el.audio.ended && azanLoaded) ? 'Stop azan' : 'Test azan';
+  }
+
+  function notify(item) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    var title = 'Waktu ' + P[item.key].ms;
+    var opts = { body: P[item.key].ms + ' · ' + hm(item.time) + ' · ' + here().name, icon: 'icons/icon-192.png', tag: 'prayer-time', silent: true };
+    if (!EMBED && navigator.serviceWorker) {
+      navigator.serviceWorker.ready.then(function (reg) { return reg.showNotification(title, opts); }).catch(function () { /* ignore */ });
+    } else {
+      /* Single-file build: no service worker exists, so use the page notification (desktop browsers; many phones refuse it). */
+      try { new Notification(title, opts); } catch (e) { /* ignore */ }
+    }
+  }
+
+  function fire(item) {
+    var id = item.key + '@' + item.time.getTime();
+    if (load(KEY.fired) === id) return;
+    save(KEY.fired, id);
+    playAzan();
+    notify(item);
+  }
+
+  /* ---------- settings dialog ---------- */
+  function renderAzanState() {
+    el.toggle.checked = azanOn;
+    el.btnSettings.classList.toggle('off', !azanOn);
+    el.btnSettings.setAttribute('aria-label', 'Azan settings (azan is ' + (azanOn ? 'on' : 'off') + ')');
+    var n = !('Notification' in window) ? 'not supported here' :
+      Notification.permission === 'granted' ? 'allowed' :
+      Notification.permission === 'denied' ? 'blocked in browser settings' : 'not asked yet';
+    el.azanStatus.textContent = azanOn
+      ? 'Azan is on. Alerts: ' + n + '.'
+      : 'Azan is off.';
+  }
+
+  function standalone() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  }
+
+  function wireUi() {
+    el.btnSettings.addEventListener('click', function () { renderAzanState(); syncSelect(); el.dialog.showModal(); });
+    el.close.addEventListener('click', function () { el.dialog.close(); });
+    el.dialog.addEventListener('click', function (e) { if (e.target === el.dialog) el.dialog.close(); });
+    el.btnRefresh.addEventListener('click', function () { detect(true); });
+    el.locSelect.addEventListener('change', onPlaceChosen);
+
+    el.toggle.addEventListener('change', function () {
+      azanOn = el.toggle.checked;
+      save(KEY.azan, azanOn);
+      if (azanOn) {
+        unlockAudio();
+        if ('Notification' in window && Notification.permission === 'default') {
+          try {
+            var r = Notification.requestPermission();
+            if (r && r.then) r.then(renderAzanState);
+          } catch (e) { /* ignore */ }
+        }
+      } else {
+        stopAzan();
+      }
+      renderAzanState();
+    });
+
+    el.azanTest.addEventListener('click', function () {
+      if (!el.audio.paused && azanLoaded) { stopAzan(); return; }
+      unlockAudio();
+      playAzan();
+    });
+    el.audio.addEventListener('ended', updateTestButton);
+    el.audio.addEventListener('pause', updateTestButton);
+
+    document.addEventListener('pointerdown', function once() {
+      if (azanOn) unlockAudio();
+      document.removeEventListener('pointerdown', once);
+    });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState !== 'visible') return;
+      tick();
+      if (Date.now() - lastFixAt > 15 * 60 * 1000) detect(false);
+    });
+
+    var deferred = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferred = e;
+      el.installBtn.hidden = false;
+    });
+    el.installBtn.addEventListener('click', function () {
+      if (!deferred) return;
+      deferred.prompt();
+      deferred = null;
+      el.installBtn.hidden = true;
+    });
+    window.addEventListener('appinstalled', function () { el.installBlock.hidden = true; });
+    if (standalone()) el.installBlock.hidden = true;
+  }
+
+  /* ---------- start ---------- */
+  buildList();
+  buildPlaceSelect();
+  wireUi();
+  renderAzanState();
+  syncSelect();
+  setLocLabel();
+  tick();
+  setInterval(tick, 1000);
+  detect(false);
+
+  if (!EMBED && 'serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('sw.js').catch(function () { /* app works without it */ });
+  }
+})();
+</script>
+</body>
+</html>
