@@ -117,7 +117,8 @@ dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
 .switch-row input:checked+.switch::after{left:34.5px}
 /*/dlg*/
 /*zoom*/
-html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{touch-action:pan-x pan-y}
+html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 /*/zoom*/
 .small{font-size:13px;color:var(--mut);margin:6px 0}
 .warn{color:var(--gold2)}
@@ -217,6 +218,7 @@ html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjus
     <button id="notif-allow" class="btn" type="button" hidden>Benarkan notifikasi</button>
     <button id="notif-test" class="btn" type="button" hidden>Uji notifikasi</button>
   </div>
+  <p id="notif-result" class="small"></p>
   <h3>Zon JAKIM</h3>
   <p id="zone-now" class="small"></p>
   <details class="help">
@@ -580,10 +582,15 @@ audio.onended=()=>{$("stopbar").hidden=true};
 audio.onerror=()=>{if(!$("stopbar").hidden&&st.sound!=="beep")beep()};
 
 function showNote(title,body){
-  if(!("Notification" in window)||Notification.permission!=="granted")return;
-  const o={body,icon:"icons/icon-192.png",tag:"solat-time",renotify:true,silent:!!st.azan};
-  const fb=()=>{try{new Notification(title,o)}catch{}};
-  if("serviceWorker" in navigator&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(r=>r&&r.showNotification?r.showNotification(title,o).catch(fb):fb()).catch(fb);else fb()}
+  return new Promise(res=>{
+    if(!("Notification" in window)){res({ok:false,why:"pelayar ini tidak menyokong notifikasi"});return}
+    if(Notification.permission!=="granted"){res({ok:false,why:"kebenaran notifikasi belum diberi"});return}
+    const o={body,icon:"icons/icon-192.png",tag:"solat-time",renotify:true,silent:!!st.azan};
+    const fb=e=>{try{new Notification(title,o);res({ok:true})}catch(x){res({ok:false,why:(e&&(e.message||e.name))||(x&&(x.message||x.name))||"ralat tidak diketahui"})}};
+    if(!("serviceWorker" in navigator)||!navigator.serviceWorker.getRegistration){fb({message:"service worker tiada"});return}
+    navigator.serviceWorker.getRegistration().then(r=>{
+      if(!r||!r.showNotification){fb({message:"aplikasi belum didaftarkan; tutup dan buka semula aplikasi sekali lagi"});return}
+      r.showNotification(title,o).then(()=>res({ok:true}),fb)}).catch(fb)})}
 function notifyPrayer(p){showNote("Solat Times · "+p.n,`Telah masuk waktu ${p.n} bagi ${st.loc.name}`)}
 function onPrayer(p){
   if(st.azan)play();
@@ -599,7 +606,7 @@ async function soundStatus(){const s=$("sound-status");
 /* Settings dialog */
 const dlg=$("settings");
 function zoneNow(){const z=st.loc.zone&&ZONES.find(x=>x[0]===st.loc.zone);$("zone-now").textContent=z?"Zon dikenal pasti: "+z[0]+" — "+z[2].join(", "):"Zon dikenal pasti: belum ada. Pilih daerah anda dalam senarai Lokasi."}
-$("btn-settings").onclick=()=>{$("azan-toggle").checked=st.azan;$("sound").value=st.sound;soundStatus();zoneNow();notifStatus();dlg.showModal();dlg.scrollTop=0};
+$("btn-settings").onclick=()=>{$("azan-toggle").checked=st.azan;$("sound").value=st.sound;soundStatus();zoneNow();notifStatus();$("notif-result").textContent="";dlg.showModal();dlg.scrollTop=0};
 $("settings-close").onclick=()=>dlg.close();
 function notifStatus(){const s=$("notif-status");if(!s)return;
   if(!("Notification" in window)){s.textContent="Pelayar ini tidak menyokong notifikasi.";$("notif-allow").hidden=true;$("notif-test").hidden=true;return}
@@ -607,7 +614,9 @@ function notifStatus(){const s=$("notif-status");if(!s)return;
   s.textContent=p==="granted"?"Notifikasi dibenarkan. Ia muncul pada waktu solat ketika aplikasi dibuka atau masih berjalan di latar belakang.":p==="denied"?"Notifikasi disekat. Hidupkan semula dalam tetapan laman web pada pelayar anda.":"Notifikasi belum dibenarkan.";
   $("notif-allow").hidden=p!=="default";$("notif-test").hidden=p!=="granted"}
 $("notif-allow").onclick=()=>{try{Promise.resolve(Notification.requestPermission()).then(notifStatus,notifStatus)}catch{notifStatus()}};
-$("notif-test").onclick=()=>showNote("Solat Times · Ujian","Ini ialah ujian notifikasi. Jika anda melihat ini, notifikasi berfungsi.");
+$("notif-test").onclick=()=>{const r=$("notif-result");r.textContent="Menghantar…";
+  showNote("Solat Times · Ujian","Ini ialah ujian notifikasi. Jika anda melihat ini, notifikasi berfungsi.").then(x=>{
+    r.textContent=x.ok?"Permintaan diterima oleh pelayar. Jika tiada notifikasi muncul, buka Tetapan telefon, Aplikasi, pelayar anda, Notifikasi, dan pastikan ia dihidupkan.":"Notifikasi gagal: "+x.why+"."})};
 $("azan-toggle").onchange=e=>{st.azan=e.target.checked;SS("azan",st.azan);
   if(st.azan&&"Notification" in window&&Notification.permission==="default")Promise.resolve(Notification.requestPermission()).then(notifStatus,notifStatus)};
 $("sound").onchange=e=>{const v=e.target.value;if(v==="custom"){$("file").click()}st.sound=v;SS("sound",v);soundStatus()};
@@ -663,7 +672,7 @@ render(true);
 setInterval(()=>render(false),1000);
 if(st.loc.source!=="manual")locate();
 /* no pinch zoom: sizes are preset (second layer, in case a browser ignores the viewport setting) */
-document.addEventListener("touchmove",e=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+["touchstart","touchmove"].forEach(t=>document.addEventListener(t,e=>{if(e.touches.length>1)e.preventDefault()},{passive:false}));
 ["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,e=>e.preventDefault()));
 if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();
