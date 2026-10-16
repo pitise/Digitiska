@@ -90,3 +90,7 @@ Solat is deployed with Pages Direct Upload (project `solat`, test address solat-
 ## Heading and official address (16.Oct.2026)
 
 On request: the heading at the top of the app now reads "Solat Times" (was "Waktu Solat"), and the Keselamatan text ends "...pautan asal Digitiska sahaja: solat.digitiska.com". Still "Waktu Solat" (not requested): the footer line before the zone text, the desktop tab title countdown, and the share-link title (og:title). Cache name is solat-v8. Patch: tools/apply-heading-address.py. The pixel check against v7 now skips the top-left heading corner only; everything else is still compared.
+
+## v8 live (16.Oct.2026)
+
+Solat-cloudflare-v8 uploaded to the Pages project `solat` (Production). Checked from the owner's computer: page hash ef04c077928cc2eeebe5e08cadaf0ba10f46bc615cd45e13e0c1c6d0dc932ec0 (equals Solat.html in commit 964357a), `sw.js` cache-control no-cache, the new address text present. Phone check of the new heading still to be reported by the owner.
