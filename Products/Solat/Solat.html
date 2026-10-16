@@ -2,9 +2,9 @@
 <html lang="ms">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Solat Times</title>
-<meta property="og:title" content="Waktu Solat">
+<meta property="og:title" content="Solat Times">
 <meta property="og:description" content="Jadual waktu solat, lokasi pilihan dan kiraan masa solat semasa.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
@@ -116,6 +116,9 @@ dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
 .switch::after{top:4.5px;left:4.5px;width:30px;height:30px}
 .switch-row input:checked+.switch::after{left:34.5px}
 /*/dlg*/
+/*zoom*/
+html,body{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/*/zoom*/
 .small{font-size:13px;color:var(--mut);margin:6px 0}
 .warn{color:var(--gold2)}
 .switch-row{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
@@ -182,7 +185,7 @@ dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
     <button id="btn-gps" class="btn" type="button">Kesan lokasi semasa</button>
   </section>
 
-  <footer id="src">Waktu Solat</footer>
+  <footer id="src">Solat Times</footer>
   <footer id="brand">© 2026 Digitiska</footer>
   <pre id="dbg" hidden></pre>
 </main>
@@ -232,7 +235,7 @@ dialog .q-mode{font-size:19.5px;padding:7px 18px;gap:12px}
   <h2>Arah Kiblat</h2>
   <p id="q-place" class="small"></p>
   <div id="q-mode" class="q-mode" aria-live="polite"></div>
-  <div class="q-mid" style="margin-top:12px"><button id="q-perm" class="btn primary" type="button" hidden>Benarkan sensor</button></div>
+  <div class="q-mid" style="margin-top:12px"><button id="q-perm" class="btn primary" type="button" hidden>Aktifkan Kompas</button></div>
   <div class="dial"><svg id="q-svg" viewBox="0 0 260 260" role="img" aria-label="Kompas kiblat">
     <circle class="q-ring" cx="130" cy="130" r="120"/>
     <g id="q-dial"><line class="q-tick major" x1="130.0" y1="34.0" x2="130.0" y2="20.0"/><line class="q-tick" x1="156.4" y1="31.5" x2="158.5" y2="23.7"/><line class="q-tick" x1="181.0" y1="41.7" x2="185.0" y2="34.7"/><line class="q-tick" x1="202.1" y1="57.9" x2="207.8" y2="52.2"/><line class="q-tick" x1="218.3" y1="79.0" x2="225.3" y2="75.0"/><line class="q-tick" x1="228.5" y1="103.6" x2="236.3" y2="101.5"/><line class="q-tick major" x1="226.0" y1="130.0" x2="240.0" y2="130.0"/><line class="q-tick" x1="228.5" y1="156.4" x2="236.3" y2="158.5"/><line class="q-tick" x1="218.3" y1="181.0" x2="225.3" y2="185.0"/><line class="q-tick" x1="202.1" y1="202.1" x2="207.8" y2="207.8"/><line class="q-tick" x1="181.0" y1="218.3" x2="185.0" y2="225.3"/><line class="q-tick" x1="156.4" y1="228.5" x2="158.5" y2="236.3"/><line class="q-tick major" x1="130.0" y1="226.0" x2="130.0" y2="240.0"/><line class="q-tick" x1="103.6" y1="228.5" x2="101.5" y2="236.3"/><line class="q-tick" x1="79.0" y1="218.3" x2="75.0" y2="225.3"/><line class="q-tick" x1="57.9" y1="202.1" x2="52.2" y2="207.8"/><line class="q-tick" x1="41.7" y1="181.0" x2="34.7" y2="185.0"/><line class="q-tick" x1="31.5" y1="156.4" x2="23.7" y2="158.5"/><line class="q-tick major" x1="34.0" y1="130.0" x2="20.0" y2="130.0"/><line class="q-tick" x1="31.5" y1="103.6" x2="23.7" y2="101.5"/><line class="q-tick" x1="41.7" y1="79.0" x2="34.7" y2="75.0"/><line class="q-tick" x1="57.9" y1="57.9" x2="52.2" y2="52.2"/><line class="q-tick" x1="79.0" y1="41.7" x2="75.0" y2="34.7"/><line class="q-tick" x1="103.6" y1="31.5" x2="101.5" y2="23.7"/><text class="n" x="130.0" y="56.0">U</text><text x="210.0" y="136.0">T</text><text x="130.0" y="216.0">S</text><text x="50.0" y="136.0">B</text>
@@ -518,7 +521,7 @@ function timesFor(d){return offFor(d)||calc(d,st.loc.lat,st.loc.lng,st.method)}
 function compute(){const n=new Date();jkEnsure();dayKey=n.toDateString()+st.method+st.loc.lat+st.loc.lng;
   const isOff=!!offFor(n);today=timesFor(n);const t=new Date(n);t.setDate(t.getDate()+1);tomorrow=timesFor(t);
   const y=new Date(n);y.setDate(y.getDate()-1);today._yIsyak=timesFor(y).isyak;
-  const f=document.getElementById("src");if(f)f.textContent="Waktu Solat · "+(isOff?"Jadual JAKIM e-Solat · Zon "+zone:(st.method==="JAKIM"&&inMY(st.loc)&&!st.loc.zone?"Kiraan pada peranti (±1 minit) · pilih daerah untuk jadual JAKIM":"Kiraan pada peranti (anggaran ±1 minit)"));}
+  const f=document.getElementById("src");if(f)f.textContent="Solat Times · "+(isOff?"Jadual JAKIM e-Solat · Zon "+zone:(st.method==="JAKIM"&&inMY(st.loc)&&!st.loc.zone?"Kiraan pada peranti (±1 minit) · pilih daerah untuk jadual JAKIM":"Kiraan pada peranti (anggaran ±1 minit)"));}
 
 function render(force){
   const now=new Date();
@@ -541,7 +544,7 @@ function render(force){
     $("hero-start").textContent=fmt(today[ck]);
   }
   $("hero-count").textContent=dur(ne-now);
-  if(matchMedia("(hover:hover) and (pointer:fine)").matches)document.title=`${ck==="syuruk"?"Zohor":P(ck).n} ${dur(ne-now)} · Waktu Solat`;
+  if(matchMedia("(hover:hover) and (pointer:fine)").matches)document.title=`${ck==="syuruk"?"Zohor":P(ck).n} ${dur(ne-now)} · Solat Times`;
   document.querySelectorAll("#list li").forEach(li=>li.classList.toggle("now",li.dataset.k===ck&&!(ck==="isyak"&&i===0&&false)));
   // Azan trigger
   for(const k of ["subuh","zohor","asar","maghrib","isyak"]){const t=today[k];const key=t.toISOString();
@@ -624,7 +627,7 @@ function qStop(){window.removeEventListener("deviceorientationabsolute",qOri,tru
   clearTimeout(qTimer);cancelAnimationFrame(qRaf);qRaf=0}
 function qOpen(){qBearing();qHead=null;qSeen=false;qd.classList.remove("aligned");$("q-perm").hidden=true;qSet("q-head","");qRot("q-dial",0);for(const t of $("q-dial").querySelectorAll("text"))t.removeAttribute("transform");
   qMode("wait");qSet("q-status","Mencari sensor kompas…");const DOE=window.DeviceOrientationEvent;
-  if(DOE&&typeof DOE.requestPermission==="function"){$("q-perm").hidden=false;qMode("wait","Menunggu kebenaran sensor");qSet("q-status","Sentuh “Benarkan sensor” untuk menghidupkan kompas.")}
+  if(DOE&&typeof DOE.requestPermission==="function"){$("q-perm").hidden=false;qMode("wait","Kompas belum aktif");qSet("q-status","Tekan “Aktifkan Kompas”, kemudian pilih Benarkan apabila diminta.")}
   else if(DOE)qListen();else qStatic();
   qd.showModal();qd.scrollTop=0}
 $("btn-qibla").onclick=qOpen;
