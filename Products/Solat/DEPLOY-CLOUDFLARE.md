@@ -36,7 +36,7 @@ curl -sI https://solat.digitiska.com/sw.js | grep -i -E "cache-control|content-t
 curl -s https://solat.digitiska.com/ | sha256sum
 sha256sum index.html          # run inside the unzipped folder
 ```
-The hash must equal `sha256sum index.html` (v8, live since 16.Oct.2026: `ef04c077928cc2eeebe5e08cadaf0ba10f46bc615cd45e13e0c1c6d0dc932ec0`; v7 was `1a427292d4a488d472afdecbe568d364670eda9e2e98163acd0fffa943adf823`) and the header must say `no-cache`. If they differ, something changed the page after you uploaded it (or you uploaded a different version). Do not share the link until you know why.
+The hash must equal `sha256sum index.html` (v9, live since 16.Oct.2026: `a995a5a92fc59562bf382ea25903ce42b540aa922f5d53b516393bf327847c8a`; v8 was `ef04c077928cc2eeebe5e08cadaf0ba10f46bc615cd45e13e0c1c6d0dc932ec0`; v7 was `1a427292d4a488d472afdecbe568d364670eda9e2e98163acd0fffa943adf823`) and the header must say `no-cache`. If they differ, something changed the page after you uploaded it (or you uploaded a different version). Do not share the link until you know why.
 
 ## 5. Updating later
 Replace `index.html` (and bump `CACHE` in `sw.js`), zip the files again with `_headers`, and upload a new deployment in the same Pages project. Then repeat step 4.
